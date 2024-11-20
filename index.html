@@ -56,6 +56,12 @@
             gap: 10px;
             overflow-x: auto; /* Rolagem horizontal */
             overflow-y: hidden; /* Impede rolagem vertical */
+            transition: max-height 0.3s ease; /* Animação ao ocultar */
+        }
+        .channel-bar.hidden {
+            max-height: 0; /* Oculta a aba de canais */
+            padding: 0; /* Remove o espaçamento */
+            overflow: hidden; /* Oculta o conteúdo */
         }
         .channel-bar::-webkit-scrollbar {
             height: 8px; /* Altura da barra de rolagem */
@@ -82,13 +88,28 @@
             gap: 5px;
         }
         .channel-button img {
-            width: 80px; /* Novo tamanho das logos */
-            height: 80px;
+            width: 60px; /* Novo tamanho das logos */
+            height: 60px;
             border-radius: 5px;
         }
         .channel-button:hover {
             background-color: rgba(30, 95, 123, 0.8);
             opacity: 0.8;
+        }
+        .toggle-button {
+            margin-bottom: 10px;
+            background-color: rgba(30, 95, 123, 0.8);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-family: 'Montserrat', sans-serif;
+            transition: background-color 0.3s;
+        }
+        .toggle-button:hover {
+            background-color: rgba(20, 75, 103, 0.9);
         }
     </style>
 </head>
@@ -98,13 +119,16 @@
         <img src="https://simp6.jpg5.su/images3/capas-full-tv73f60fc1674439df.png" alt="Logo Full TV">
     </div>
 
+    <!-- Botão para mostrar/ocultar canais -->
+    <button class="toggle-button" onclick="toggleChannelBar()">Mostrar/Ocultar Canais</button>
+
     <!-- Player principal -->
     <div class="container" id="player-container">
         <iframe src="https://reidoscanais.tv/embed/?id=espn" allow="encrypted-media" allowfullscreen></iframe>
     </div>
 
     <!-- Aba de canais -->
-    <div class="channel-bar">
+    <div class="channel-bar" id="channel-bar">
         <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn')">
             <img src="https://logodownload.org/wp-content/uploads/2015/05/espn-logo-4-1.png" alt="ESPN">
             <span>ESPN</span>
@@ -131,6 +155,11 @@
         function loadPlayer(url) {
             const playerContainer = document.getElementById('player-container');
             playerContainer.innerHTML = `<iframe src="${url}" allow="encrypted-media" allowfullscreen></iframe>`;
+        }
+
+        function toggleChannelBar() {
+            const channelBar = document.getElementById('channel-bar');
+            channelBar.classList.toggle('hidden'); // Adiciona ou remove a classe "hidden"
         }
     </script>
 </body>
