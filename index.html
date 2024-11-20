@@ -96,20 +96,28 @@
             background-color: rgba(30, 95, 123, 0.8);
             opacity: 0.8;
         }
-        .toggle-button {
-            margin-bottom: 10px;
+        .toggle-channel-bar {
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
             background-color: rgba(30, 95, 123, 0.8);
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-family: 'Montserrat', sans-serif;
+            font-size: 30px;
+            padding: 10px;
+            border-radius: 50%;
             transition: background-color 0.3s;
         }
-        .toggle-button:hover {
+        .toggle-channel-bar:hover {
             background-color: rgba(20, 75, 103, 0.9);
+        }
+        .toggle-channel-bar:before {
+            content: '→'; /* Seta para a direita */
+            font-size: 25px;
+        }
+        .toggle-channel-bar.open:before {
+            content: '←'; /* Seta para a esquerda quando aberto */
         }
     </style>
 </head>
@@ -119,8 +127,8 @@
         <img src="https://simp6.jpg5.su/images3/capas-full-tv73f60fc1674439df.png" alt="Logo Full TV">
     </div>
 
-    <!-- Botão para mostrar/ocultar canais -->
-    <button class="toggle-button" onclick="toggleChannelBar()">Mostrar/Ocultar Canais</button>
+    <!-- Botão para mostrar/ocultar canais (seta) -->
+    <div class="toggle-channel-bar" onclick="toggleChannelBar()"></div>
 
     <!-- Player principal -->
     <div class="container" id="player-container">
@@ -159,7 +167,9 @@
 
         function toggleChannelBar() {
             const channelBar = document.getElementById('channel-bar');
-            channelBar.classList.toggle('hidden'); // Adiciona ou remove a classe "hidden"
+            const toggleButton = document.querySelector('.toggle-channel-bar');
+            channelBar.classList.toggle('hidden'); // Alterna a visibilidade da aba de canais
+            toggleButton.classList.toggle('open'); // Muda a direção da seta
         }
     </script>
 </body>
