@@ -14,7 +14,7 @@
         body {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
             height: 100vh;
             background: url('https://simp6.jpg5.su/images3/ESPN-1739b969f511153b4.png') no-repeat center center fixed;
             background-size: cover;
@@ -23,25 +23,21 @@
             text-shadow: 1px 1px 2px black;
         }
         .logo {
-            margin: 10px 20px;
+            margin: 10px 0;
         }
         .logo img {
             width: 50px;
             height: auto;
         }
-        .main-content {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
         .container {
-            flex: 1; /* O player ocupa o espaço necessário */
             background-color: rgba(0, 0, 0, 0.7);
             padding: 10px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            max-width: 700px; /* Limite máximo de largura */
-            margin: 20px;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            margin-bottom: 20px;
         }
         iframe {
             width: 100%;
@@ -49,28 +45,26 @@
             border: none;
             border-radius: 10px;
         }
-        .channel-sidebar {
-            width: 250px;
+        .channel-bar {
+            width: 100%;
+            max-width: 700px;
             background-color: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             padding: 10px;
-            margin: 20px 20px 20px 0;
-            overflow-y: auto;
-            height: calc(100% - 40px); /* Altura dinâmica para caber na tela */
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            overflow-x: auto;
         }
-        .channel-sidebar::-webkit-scrollbar {
-            width: 8px;
+        .channel-bar::-webkit-scrollbar {
+            height: 8px;
         }
-        .channel-sidebar::-webkit-scrollbar-thumb {
+        .channel-bar::-webkit-scrollbar-thumb {
             background: rgba(30, 95, 123, 0.8);
             border-radius: 5px;
         }
         .channel-button {
-            width: 100%;
-            margin-bottom: 10px;
             background-color: rgba(181, 181, 181, 0.2);
             color: white;
             border: none;
@@ -79,11 +73,13 @@
             font-size: 14px;
             font-family: 'Montserrat', sans-serif;
             transition: background-color 0.3s, opacity 0.3s;
-            text-align: left;
+            text-align: center;
             padding: 10px;
+            width: 100px; /* Tamanho fixo dos botões */
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 5px;
         }
         .channel-button img {
             width: 40px;
@@ -102,35 +98,33 @@
         <img src="https://simp6.jpg5.su/images3/capas-full-tv73f60fc1674439df.png" alt="Logo Full TV">
     </div>
 
-    <div class="main-content">
-        <!-- Player -->
-        <div class="container" id="player-container">
-            <iframe src="https://reidoscanais.tv/embed/?id=espn" allow="encrypted-media" allowfullscreen></iframe>
-        </div>
+    <!-- Player principal -->
+    <div class="container" id="player-container">
+        <iframe src="https://reidoscanais.tv/embed/?id=espn" allow="encrypted-media" allowfullscreen></iframe>
+    </div>
 
-        <!-- Aba lateral de canais -->
-        <div class="channel-sidebar">
-            <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn')">
-                <img src="https://via.placeholder.com/40x40?text=E1" alt="ESPN">
-                <span>ESPN</span>
-            </button>
-            <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn2')">
-                <img src="https://via.placeholder.com/40x40?text=E2" alt="ESPN 2">
-                <span>ESPN 2</span>
-            </button>
-            <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn3')">
-                <img src="https://via.placeholder.com/40x40?text=E3" alt="ESPN 3">
-                <span>ESPN 3</span>
-            </button>
-            <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn4')">
-                <img src="https://via.placeholder.com/40x40?text=E4" alt="ESPN 4">
-                <span>ESPN 4</span>
-            </button>
-            <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn5')">
-                <img src="https://via.placeholder.com/40x40?text=E5" alt="ESPN 5">
-                <span>ESPN 5</span>
-            </button>
-        </div>
+    <!-- Aba dos canais -->
+    <div class="channel-bar">
+        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn')">
+            <img src="https://via.placeholder.com/40x40?text=E1" alt="ESPN">
+            <span>ESPN</span>
+        </button>
+        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn2')">
+            <img src="https://via.placeholder.com/40x40?text=E2" alt="ESPN 2">
+            <span>ESPN 2</span>
+        </button>
+        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn3')">
+            <img src="https://via.placeholder.com/40x40?text=E3" alt="ESPN 3">
+            <span>ESPN 3</span>
+        </button>
+        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn4')">
+            <img src="https://via.placeholder.com/40x40?text=E4" alt="ESPN 4">
+            <span>ESPN 4</span>
+        </button>
+        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn5')">
+            <img src="https://via.placeholder.com/40x40?text=E5" alt="ESPN 5">
+            <span>ESPN 5</span>
+        </button>
     </div>
 
     <script>
