@@ -15,68 +15,61 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            justify-content: flex-start;
             height: 100vh;
             background: url('https://simp6.jpg5.su/images3/ESPN-1739b969f511153b4.png') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Montserrat', sans-serif;
             color: white;
             text-shadow: 1px 1px 2px black;
-            overflow: hidden;
         }
         .logo {
             margin: 10px 20px;
         }
         .logo img {
-            width: 50px; /* Imagem pequena */
+            width: 50px;
             height: auto;
         }
-        .content {
+        .main-content {
             display: flex;
             width: 100%;
-            height: calc(100% - 70px); /* Subtrai a altura da logo */
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            gap: 20px;
+            height: 100%;
         }
         .container {
-            flex: 2; /* Ajusta a proporção do player */
+            flex: 1; /* O player ocupa o espaço necessário */
             background-color: rgba(0, 0, 0, 0.7);
             padding: 10px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            height: 300px; /* Altura fixa para o player */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            max-width: 700px; /* Limite máximo de largura */
+            margin: 20px;
         }
         iframe {
             width: 100%;
-            height: 100%;
+            height: 350px; /* Altura fixa do player */
             border: none;
             border-radius: 10px;
         }
-        .button-container {
-            flex: 1;
+        .channel-sidebar {
+            width: 250px;
             background-color: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 10px;
-            height: 350px; /* Mesmo tamanho do player */
+            margin: 20px 20px 20px 0;
             overflow-y: auto;
+            height: calc(100% - 40px); /* Altura dinâmica para caber na tela */
         }
-        .button-container::-webkit-scrollbar {
+        .channel-sidebar::-webkit-scrollbar {
             width: 8px;
         }
-        .button-container::-webkit-scrollbar-thumb {
+        .channel-sidebar::-webkit-scrollbar-thumb {
             background: rgba(30, 95, 123, 0.8);
             border-radius: 5px;
         }
         .channel-button {
-            width: 90%;
+            width: 100%;
             margin-bottom: 10px;
             background-color: rgba(181, 181, 181, 0.2);
             color: white;
@@ -86,14 +79,14 @@
             font-size: 14px;
             font-family: 'Montserrat', sans-serif;
             transition: background-color 0.3s, opacity 0.3s;
-            text-align: center;
+            text-align: left;
             padding: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         .channel-button img {
-            width: 40px; /* Imagem do canal */
+            width: 40px;
             height: 40px;
             border-radius: 5px;
         }
@@ -109,33 +102,33 @@
         <img src="https://simp6.jpg5.su/images3/capas-full-tv73f60fc1674439df.png" alt="Logo Full TV">
     </div>
 
-    <div class="content">
+    <div class="main-content">
         <!-- Player -->
         <div class="container" id="player-container">
             <iframe src="https://reidoscanais.tv/embed/?id=espn" allow="encrypted-media" allowfullscreen></iframe>
         </div>
 
-        <!-- Aba de canais com botões com imagens -->
-        <div class="button-container">
+        <!-- Aba lateral de canais -->
+        <div class="channel-sidebar">
             <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn')">
                 <img src="https://via.placeholder.com/40x40?text=E1" alt="ESPN">
-                ESPN
+                <span>ESPN</span>
             </button>
             <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn2')">
                 <img src="https://via.placeholder.com/40x40?text=E2" alt="ESPN 2">
-                ESPN 2
+                <span>ESPN 2</span>
             </button>
             <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn3')">
                 <img src="https://via.placeholder.com/40x40?text=E3" alt="ESPN 3">
-                ESPN 3
+                <span>ESPN 3</span>
             </button>
             <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn4')">
                 <img src="https://via.placeholder.com/40x40?text=E4" alt="ESPN 4">
-                ESPN 4
+                <span>ESPN 4</span>
             </button>
             <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn5')">
                 <img src="https://via.placeholder.com/40x40?text=E5" alt="ESPN 5">
-                ESPN 5
+                <span>ESPN 5</span>
             </button>
         </div>
     </div>
