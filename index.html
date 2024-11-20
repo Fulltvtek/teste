@@ -98,7 +98,7 @@
         }
         .toggle-channel-bar {
             position: absolute;
-            left: -20px;
+            left: -40px; /* Coloca a seta antes da aba de canais */
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
@@ -113,11 +113,11 @@
             background-color: rgba(20, 75, 103, 0.9);
         }
         .toggle-channel-bar:before {
-            content: '→'; /* Seta para a direita */
+            content: '→'; /* Seta para a direita quando aba está oculta */
             font-size: 25px;
         }
         .toggle-channel-bar.open:before {
-            content: '←'; /* Seta para a esquerda quando aberto */
+            content: '←'; /* Seta para a esquerda quando aba está visível */
         }
     </style>
 </head>
@@ -127,7 +127,7 @@
         <img src="https://simp6.jpg5.su/images3/capas-full-tv73f60fc1674439df.png" alt="Logo Full TV">
     </div>
 
-    <!-- Botão para mostrar/ocultar canais (seta) -->
+    <!-- Botão de seta para mostrar/ocultar canais -->
     <div class="toggle-channel-bar" onclick="toggleChannelBar()"></div>
 
     <!-- Player principal -->
