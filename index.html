@@ -23,17 +23,14 @@
             text-shadow: 1px 1px 2px black;
             overflow: hidden;
         }
-        .logo {
-            margin: 10px;
-        }
-        .logo img {
-            width: 50px; /* Imagem bem pequena */
-            height: auto;
-        }
         .content {
             display: flex;
-            flex: 1;
             width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
         }
         .container {
             flex: 3;
@@ -41,8 +38,10 @@
             padding: 10px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            margin: 10px;
-            text-align: center;
+            height: 350px; /* Altura fixa para manter o tamanho do player */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         iframe {
             width: 100%;
@@ -54,10 +53,12 @@
             flex: 1;
             background-color: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
-            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 10px;
+            height: 350px; /* Mesmo tamanho do player */
             overflow-y: auto;
-            max-height: calc(100vh - 40px); /* Espaço total para rolar */
         }
         .button-container::-webkit-scrollbar {
             width: 8px;
@@ -66,8 +67,17 @@
             background: rgba(30, 95, 123, 0.8);
             border-radius: 5px;
         }
+        .logo {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+        }
+        .logo img {
+            width: 50px; /* Tamanho pequeno */
+            height: auto;
+        }
         button {
-            width: 100%;
+            width: 90%;
             margin-bottom: 10px;
             padding: 10px;
             background-color: rgba(181, 181, 181, 0.2);
@@ -86,17 +96,17 @@
     </style>
 </head>
 <body>
-    <!-- Imagem no topo esquerdo -->
-    <div class="logo">
-        <img src="https://simp6.jpg5.su/images3/capas-full-tv73f60fc1674439df.png" alt="Logo Full TV">
-    </div>
-
-    <!-- Layout principal -->
     <div class="content">
+        <!-- Player -->
         <div class="container" id="player-container">
             <iframe src="https://reidoscanais.tv/embed/?id=espn" allow="encrypted-media" allowfullscreen></iframe>
         </div>
+
+        <!-- Aba de canais com logo no topo -->
         <div class="button-container">
+            <div class="logo">
+                <img src="https://simp6.jpg5.su/images3/capas-full-tv73f60fc1674439df.png" alt="Logo Full TV">
+            </div>
             <button onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn')">ESPN</button>
             <button onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn2')">ESPN 2</button>
             <button onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn3')">ESPN 3</button>
@@ -105,7 +115,6 @@
             <button onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn6')">ESPN 6</button>
             <button onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn7')">ESPN 7</button>
             <button onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn8')">ESPN 8</button>
-            <!-- Adicione mais botões conforme necessário -->
         </div>
     </div>
 
