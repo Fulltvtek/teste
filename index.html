@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FULLTV • Canais ao Vivo</title>
+  <title>Fulltv • Canais ao Vivo</title>
+  <!-- Favicon SVG inline -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%236d1418'/%3E%3Crect x='14' y='14' width='36' height='10' fill='%23ffffff'/%3E%3Crect x='14' y='27' width='20' height='10' fill='%23ffffff'/%3E%3Crect x='14' y='14' width='10' height='36' fill='%23ffffff'/%3E%3C/svg%3E" />
+  <meta name="theme-color" content="#6d1418" />
   <!-- Tailwind CDN (sem build) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -20,8 +23,8 @@
   <!-- Topbar -->
   <header class="flex h-16 items-center justify-between border-b border-white/10 bg-gradient-to-r from-[#4b0d10] via-[#6d1418] to-[#4b0d10] px-4">
     <div class="flex items-center gap-3">
-      <div class="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#6d1418] font-black">U</div>
-      <span class="text-white/90 font-semibold">FullTV</span>
+      <div class="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#6d1418] font-black">F</div>
+      <span class="text-white/90 font-semibold">Fulltv</span>
     </div>
     <nav class="hidden md:flex items-center gap-6 text-sm">
       <button class="uppercase tracking-wide text-white font-semibold">TV</button>
@@ -64,7 +67,7 @@
         <button id="btnFullscreen" class="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60" title="Tela cheia">⤢</button>
       </div>
       <!-- Barra de informações -->
-      <div class="pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4">
+      <div id=\"infoBar\" class=\"pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4\">
         <div class="w-full rounded-2xl bg-gradient-to-r from-black/80 via-black/60 to-transparent p-4 text-white shadow-2xl">
           <div class="text-sm uppercase tracking-wide text-white/70">Canal</div>
           <div class="flex items-baseline justify-between">
@@ -76,7 +79,7 @@
     </section>
   </main>
 
-  <footer class="mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-white/60">Feito para GitHub Pages (sem build). Edite a lista de canais abaixo.</footer>
+  <footer class="mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-white/60">Todos os direitos reservados ao Fulltv © 2025</footer>
 
   <!-- App JS (vanilla) -->
   <script>
@@ -164,18 +167,40 @@
       if (e.key === 'Enter')     { e.preventDefault(); /* já troca com o click - mantemos o canal atual */ }
     });
 
-    // ====== Fullscreen ======
+    // ====== Fullscreen & InfoBar visibility ======
+    const infoBar = document.getElementById('infoBar');
+
+    function updateInfoBarVisibility() {
+      const isFS = !!document.fullscreenElement;
+      if (isFS) {
+        infoBar.classList.add('hidden');
+      } else {
+        infoBar.classList.remove('hidden');
+      }
+    }
+
     document.getElementById('btnFullscreen').addEventListener('click', async () => {
       const el = document.getElementById('playerContainer');
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        infoBar.classList.add('hidden'); // oculta imediatamente ao entrar em tela cheia
+        await el.requestFullscreen?.();
+      }
+    });
+
+    document.addEventListener('fullscreenchange', updateInfoBarVisibility);
       if (document.fullscreenElement) { await document.exitFullscreen(); } else { await el.requestFullscreen?.(); }
     });
 
     // ====== Relógio ======
     function updateClock() {
       const el = document.getElementById('clock');
-      el.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const now = new Date();
+      el.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     }
-    updateClock(); setInterval(updateClock, 30_000);
+    updateClock();
+    setInterval(updateClock, 1000);
 
     // ====== Inicialização ======
     renderList();
