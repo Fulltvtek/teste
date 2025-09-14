@@ -203,8 +203,25 @@
     setInterval(updateClock, 1000);
 
     // ====== Inicialização ======
-    renderList();
-    if (CHANNELS.length) selectChannel(0);
+    function init() {
+      try { renderList(); } catch (e) { console.error('Render list error:', e); }
+      if (CHANNELS && CHANNELS.length) {
+        selectChannel(0);
+      } else {
+        const listEl = document.getElementById('channelList');
+        if (listEl) {
+          const empty = document.createElement('div');
+          empty.className = 'text-sm text-white/60';
+          empty.textContent = 'Nenhum canal disponível.';
+          listEl.appendChild(empty);
+        }
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
