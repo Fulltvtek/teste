@@ -1,492 +1,185 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniTV • Canais ao Vivo</title>
+  <!-- Tailwind CDN (sem build) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Fundo com textura/gradiente para lembrar UI de TV */
+    body { 
+      background: radial-gradient(80% 120% at 50% 0%, #7c1a1f 0%, #4b0d10 60%, #250608 100%);
+    }
+    /* Scrollbar sutil no menu */
+    .thin-scroll::-webkit-scrollbar { width: 8px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen text-white">
+  <!-- Topbar -->
+  <header class="flex h-16 items-center justify-between border-b border-white/10 bg-gradient-to-r from-[#4b0d10] via-[#6d1418] to-[#4b0d10] px-4">
+    <div class="flex items-center gap-3">
+      <div class="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#6d1418] font-black">U</div>
+      <span class="text-white/90 font-semibold">UniTV</span>
+    </div>
+    <nav class="hidden md:flex items-center gap-6 text-sm">
+      <button class="uppercase tracking-wide text-white font-semibold">TV</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">DESTAQUES</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">FILMES</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">SÉRIES</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">
+        <span class="[text-shadow:0_1px_0_rgba(0,0,0,0.2)]"><span class="text-pink-300">K</span><span class="text-yellow-300">I</span><span class="text-green-300">D</span><span class="text-sky-300">S</span></span>
+      </button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">EXPLORAR</button>
+    </nav>
+    <div class="flex items-center gap-4 text-white/80">
+      <button title="Pesquisar" class="hover:text-white">🔎</button>
+      <button title="Notificações" class="hover:text-white">🔔</button>
+      <button title="Perfil" class="hover:text-white">👤</button>
+      <div id="clock" class="ml-2 text-white/90 tabular-nums">--:--</div>
+    </div>
+  </header>
 
-const TABS = ["TV", "DESTAQUES", "FILMES", "SÉRIES", "KIDS", "EXPLORAR"];
-
-// Lista de canais atualizada com Globo SP
-const SAMPLE_CHANNELS = [
-  {
-    id: 1,
-    number: 1,
-    name: "Globo SP",
-    quality: "HD",
-    logo: "import React, { useEffect, useMemo, useRef, useState } from "react";
-
-const TABS = ["TV", "DESTAQUES", "FILMES", "SÉRIES", "KIDS", "EXPLORAR"];
-
-// Lista de canais atualizada com Globo SP
-const SAMPLE_CHANNELS = [
-  {
-    id: 1,
-    number: 1,
-    name: "Globo SP",
-    quality: "HD",
-    logo: "https://logodownload.org/wp-content/uploads/2013/12/globo-logo-1.png",
-    category: "Abertos",
-    live: true,
-    streamUrl: "https://reidoscanais.life/embed/?id=globosp-globosaopaulo"
-  }
-];
-
-const useClock = () => {
-  const [time, setTime] = useState(() => new Date());
-  useEffect(() => {
-    const i = setInterval(() => setTime(new Date()), 30_000);
-    return () => clearInterval(i);
-  }, []);
-  return time.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-};
-
-function Badge({ children }) {
-  return (
-    <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide">
-      {children}
-    </span>
-  );
-}
-
-function TopBar({ activeTab, onTabChange }) {
-  const time = useClock();
-  return (
-    <header className="flex h-16 items-center justify-between border-b border-white/10 bg-gradient-to-r from-[#4b0d10] via-[#6d1418] to-[#4b0d10] px-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#6d1418] font-black">U</div>
-        <span className="text-white/90 font-semibold">UniTV</span>
-      </div>
-      <nav className="hidden md:flex items-center gap-6 text-sm">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => onTabChange(t)}
-            className={`uppercase tracking-wide transition-colors ${
-              activeTab === t
-                ? "text-white font-semibold"
-                : "text-white/60 hover:text-white/90"
-            }`}
-          >
-            {t === "KIDS" ? (
-              <span className="[text-shadow:0_1px_0_rgba(0,0,0,0.2)]">
-                <span className="text-pink-300">K</span>
-                <span className="text-yellow-300">I</span>
-                <span className="text-green-300">D</span>
-                <span className="text-sky-300">S</span>
-              </span>
-            ) : (
-              t
-            )}
-          </button>
-        ))}
-      </nav>
-      <div className="flex items-center gap-4 text-white/80">
-        <button title="Pesquisar" className="hover:text-white">🔎</button>
-        <button title="Notificações" className="hover:text-white">🔔</button>
-        <button title="Perfil" className="hover:text-white">👤</button>
-        <div className="ml-2 text-white/90 tabular-nums">{time}</div>
-      </div>
-    </header>
-  );
-}
-
-function ChannelItem({ ch, selected, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`group relative flex w-full items-center gap-3 rounded-xl border border-white/5 px-3 py-2 text-left transition-all ${
-        selected
-          ? "bg-white/10 ring-2 ring-rose-400/50"
-          : "hover:bg-white/5"
-      }`}
-    >
-      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-black/30 text-lg">
-        <img src={ch.logo} alt={ch.name} className="h-6 w-6 object-contain" />
-      </div>
-      <div className="flex min-w-0 flex-col">
-        <div className="flex items-center text-[13px] text-white/90">
-          <span className="mr-2 text-white/70 w-6">{ch.number}</span>
-          <span className="truncate">{ch.name}</span>
-          <Badge>{ch.quality}</Badge>
-        </div>
-        <div className="text-[11px] text-white/55">{ch.category}</div>
-      </div>
-      {ch.live && (
-        <span className="ml-auto rounded-sm bg-red-500/90 px-1.5 py-0.5 text-[10px] font-semibold text-white">AO VIVO</span>
-      )}
-    </button>
-  );
-}
-
-function Sidebar({ channels, selectedIndex, onSelect }) {
-  return (
-    <aside className="flex w-[320px] shrink-0 flex-col gap-2 p-4">
-      <div className="mb-1 text-xs uppercase tracking-wide text-white/60">
-        Lista de Canais
-      </div>
-      <div className="flex max-h-[60vh] flex-col gap-2 overflow-auto pr-1">
-        {channels.map((ch, i) => (
-          <ChannelItem
-            key={ch.id}
-            ch={ch}
-            selected={i === selectedIndex}
-            onClick={() => onSelect(i)}
-          />
-        ))}
-      </div>
-      <div className="mt-3 rounded-lg border border-white/10 p-3 text-[11px] text-white/60">
-        Pressione <span className="rounded bg-white/10 px-1">MENU</span> para pesquisar canais
+  <!-- GRID -->
+  <main class="mx-auto grid max-w-7xl grid-cols-1 gap-4 p-4 md:grid-cols-[320px_1fr]">
+    <!-- Sidebar canais -->
+    <aside class="flex w-[320px] shrink-0 flex-col gap-2 p-1">
+      <div class="mb-1 text-xs uppercase tracking-wide text-white/60">Lista de Canais</div>
+      <div id="channelList" class="thin-scroll flex max-h-[60vh] flex-col gap-2 overflow-auto pr-1"></div>
+      <div class="mt-3 rounded-lg border border-white/10 p-3 text-[11px] text-white/60">
+        Pressione <span class="rounded bg-white/10 px-1">↑/↓</span> para navegar e <span class="rounded bg-white/10 px-1">Enter</span> para assistir
       </div>
     </aside>
-  );
-}
 
-function LiveBadge() {
-  return (
-    <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-2 rounded-full bg-red-600/90 px-2.5 py-1 text-xs font-bold text-white shadow">
-      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-white" /> AO VIVO
-    </div>
-  );
-}
-
-function VideoActions({ onToggleMute, muted, onFullscreen }) {
-  return (
-    <div className="absolute right-4 top-4 flex items-center gap-2">
-      <button
-        onClick={onToggleMute}
-        className="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60"
-        title={muted ? "Ativar som" : "Silenciar"}
-      >
-        {muted ? "🔇" : "🔊"}
-      </button>
-      <button
-        onClick={onFullscreen}
-        className="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60"
-        title="Tela cheia"
-      >
-        ⤢
-      </button>
-    </div>
-  );
-}
-
-function InfoBar({ title, subtitle }) {
-  return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4">
-      <div className="w-full rounded-2xl bg-gradient-to-r from-black/80 via-black/60 to-transparent p-4 text-white shadow-2xl">
-        <div className="text-sm uppercase tracking-wide text-white/70">Canal</div>
-        <div className="flex items-baseline justify-between">
-          <h3 className="truncate text-2xl font-bold md:text-3xl">{title}</h3>
-          <div className="hidden pl-4 text-right text-sm text-white/70 md:block">{subtitle}</div>
+    <!-- Player -->
+    <section id="playerContainer" class="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
+      <iframe id="player" src="about:blank" title="Canal atual" class="absolute inset-0 h-full w-full border-0" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      <!-- LIVE -->
+      <div class="pointer-events-none absolute left-4 top-4 flex items-center gap-2 rounded-full bg-red-600/90 px-2.5 py-1 text-xs font-bold text-white shadow">
+        <span class="inline-block h-2 w-2 animate-pulse rounded-full bg-white"></span> AO VIVO
+      </div>
+      <!-- Ações -->
+      <div class="absolute right-4 top-4 flex items-center gap-2 z-10">
+        <button id="btnFullscreen" class="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60" title="Tela cheia">⤢</button>
+      </div>
+      <!-- Barra de informações -->
+      <div class="pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4">
+        <div class="w-full rounded-2xl bg-gradient-to-r from-black/80 via-black/60 to-transparent p-4 text-white shadow-2xl">
+          <div class="text-sm uppercase tracking-wide text-white/70">Canal</div>
+          <div class="flex items-baseline justify-between">
+            <h3 id="infoTitle" class="truncate text-2xl font-bold md:text-3xl">—</h3>
+            <div id="infoSubtitle" class="hidden pl-4 text-right text-sm text-white/70 md:block">—</div>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    </section>
+  </main>
 
-export default function LiveTVLayout() {
-  const [activeTab, setActiveTab] = useState("TV");
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [muted, setMuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
+  <footer class="mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-white/60">Feito para GitHub Pages (sem build). Edite a lista de canais abaixo.</footer>
 
-  const channels = useMemo(() => {
-    if (activeTab === "KIDS") return SAMPLE_CHANNELS.filter((c) => c.category === "Kids");
-    return SAMPLE_CHANNELS;
-  }, [activeTab]);
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedIndex((i) => Math.min(i + 1, channels.length - 1));
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedIndex((i) => Math.max(i - 1, 0));
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        setIsPlaying(true);
+  <!-- App JS (vanilla) -->
+  <script>
+    // ====== Lista de Canais ======
+    // Para adicionar mais canais, basta copiar o objeto e alterar os campos.
+    const CHANNELS = [
+      {
+        id: 1,
+        number: 1,
+        name: "Globo SP",
+        category: "Abertos",
+        quality: "HD",
+        logoUrl: "https://logodownload.org/wp-content/uploads/2013/12/globo-logo-1.png",
+        live: true,
+        streamUrl: "https://reidoscanais.life/embed/?id=globosp-globosaopaulo"
       }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [channels.length]);
+      // { id: 2, number: 2, name: "Seu Próximo Canal", category: "Esporte", quality: "HD", logoUrl: "https://...", live: true, streamUrl: "https://..." },
+    ];
 
-  const current = channels[selectedIndex] ?? channels[0];
-  const containerRef = useRef(null);
+    // ====== Estado simples ======
+    let selectedIndex = 0;
 
-  const handleFullscreen = async () => {
-    const el = containerRef.current;
-    if (!el) return;
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
-    } else {
-      await el.requestFullscreen?.();
+    // ====== Render da Sidebar ======
+    const listEl = document.getElementById('channelList');
+
+    function renderList() {
+      listEl.innerHTML = '';
+      CHANNELS.forEach((ch, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `group relative flex w-full items-center gap-3 rounded-xl border border-white/5 px-3 py-2 text-left transition-all ${idx === selectedIndex ? 'bg-white/10 ring-2 ring-rose-400/50' : 'hover:bg-white/5'}`;
+
+        const logoWrap = document.createElement('div');
+        logoWrap.className = 'flex h-8 w-8 items-center justify-center rounded-md bg-black/30 text-lg overflow-hidden';
+        const img = document.createElement('img');
+        img.src = ch.logoUrl; img.alt = ch.name; img.className = 'h-6 w-6 object-contain';
+        logoWrap.appendChild(img);
+
+        const textWrap = document.createElement('div');
+        textWrap.className = 'flex min-w-0 flex-col';
+
+        const titleRow = document.createElement('div');
+        titleRow.className = 'flex items-center text-[13px] text-white/90';
+        const num = document.createElement('span'); num.className = 'mr-2 text-white/70 w-6'; num.textContent = ch.number;
+        const name = document.createElement('span'); name.className = 'truncate'; name.textContent = ch.name;
+        const badge = document.createElement('span'); badge.className = 'ml-2 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide'; badge.textContent = ch.quality;
+        titleRow.append(num, name, badge);
+
+        const cat = document.createElement('div'); cat.className = 'text-[11px] text-white/55'; cat.textContent = ch.category;
+        textWrap.append(titleRow, cat);
+
+        btn.append(logoWrap, textWrap);
+        if (ch.live) {
+          const live = document.createElement('span');
+          live.className = 'ml-auto rounded-sm bg-red-500/90 px-1.5 py-0.5 text-[10px] font-semibold text-white';
+          live.textContent = 'AO VIVO';
+          btn.appendChild(live);
+        }
+
+        btn.addEventListener('click', () => selectChannel(idx));
+        listEl.appendChild(btn);
+      });
     }
-  };
 
-  return (
-    <div className="min-h-screen w-full bg-[radial-gradient(80%_120%_at_50%_0%,#7c1a1f_0%,#4b0d10_60%,#250608_100%)] text-white">
-      <TopBar activeTab={activeTab} onTabChange={setActiveTab} />
-      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-4 p-4 md:grid-cols-[320px_1fr]">
-        <Sidebar
-          channels={channels}
-          selectedIndex={selectedIndex}
-          onSelect={setSelectedIndex}
-        />
-        <section
-          ref={containerRef}
-          className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl"
-        >
-          <iframe
-            src={current.streamUrl}
-            title={current.name}
-            className="absolute inset-0 h-full w-full border-0"
-            allowFullScreen
-          ></iframe>
-          <LiveBadge />
-          <VideoActions
-            muted={muted}
-            onToggleMute={() => setMuted((m) => !m)}
-            onFullscreen={handleFullscreen}
-          />
-          <InfoBar title={current?.name} subtitle={current?.category} />
-        </section>
-      </main>
-      <footer className="mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-white/60">
-        Dica: use as setas do teclado para navegar pelos canais e Enter para assistir.
-      </footer>
-    </div>
-  );
-}
-",
-    category: "Abertos",
-    live: true,
-    streamUrl: "https://reidoscanais.life/embed/?id=globosp-globosaopaulo"
-  }
-];
+    // ====== Seleção e Player ======
+    const player = document.getElementById('player');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoSubtitle = document.getElementById('infoSubtitle');
 
-const useClock = () => {
-  const [time, setTime] = useState(() => new Date());
-  useEffect(() => {
-    const i = setInterval(() => setTime(new Date()), 30_000);
-    return () => clearInterval(i);
-  }, []);
-  return time.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-};
-
-function Badge({ children }) {
-  return (
-    <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide">
-      {children}
-    </span>
-  );
-}
-
-function TopBar({ activeTab, onTabChange }) {
-  const time = useClock();
-  return (
-    <header className="flex h-16 items-center justify-between border-b border-white/10 bg-gradient-to-r from-[#4b0d10] via-[#6d1418] to-[#4b0d10] px-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#6d1418] font-black">U</div>
-        <span className="text-white/90 font-semibold">UniTV</span>
-      </div>
-      <nav className="hidden md:flex items-center gap-6 text-sm">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => onTabChange(t)}
-            className={`uppercase tracking-wide transition-colors ${
-              activeTab === t
-                ? "text-white font-semibold"
-                : "text-white/60 hover:text-white/90"
-            }`}
-          >
-            {t === "KIDS" ? (
-              <span className="[text-shadow:0_1px_0_rgba(0,0,0,0.2)]">
-                <span className="text-pink-300">K</span>
-                <span className="text-yellow-300">I</span>
-                <span className="text-green-300">D</span>
-                <span className="text-sky-300">S</span>
-              </span>
-            ) : (
-              t
-            )}
-          </button>
-        ))}
-      </nav>
-      <div className="flex items-center gap-4 text-white/80">
-        <button title="Pesquisar" className="hover:text-white">🔎</button>
-        <button title="Notificações" className="hover:text-white">🔔</button>
-        <button title="Perfil" className="hover:text-white">👤</button>
-        <div className="ml-2 text-white/90 tabular-nums">{time}</div>
-      </div>
-    </header>
-  );
-}
-
-function ChannelItem({ ch, selected, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`group relative flex w-full items-center gap-3 rounded-xl border border-white/5 px-3 py-2 text-left transition-all ${
-        selected
-          ? "bg-white/10 ring-2 ring-rose-400/50"
-          : "hover:bg-white/5"
-      }`}
-    >
-      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-black/30 text-lg">
-        <img src={ch.logo} alt={ch.name} className="h-6 w-6 object-contain" />
-      </div>
-      <div className="flex min-w-0 flex-col">
-        <div className="flex items-center text-[13px] text-white/90">
-          <span className="mr-2 text-white/70 w-6">{ch.number}</span>
-          <span className="truncate">{ch.name}</span>
-          <Badge>{ch.quality}</Badge>
-        </div>
-        <div className="text-[11px] text-white/55">{ch.category}</div>
-      </div>
-      {ch.live && (
-        <span className="ml-auto rounded-sm bg-red-500/90 px-1.5 py-0.5 text-[10px] font-semibold text-white">AO VIVO</span>
-      )}
-    </button>
-  );
-}
-
-function Sidebar({ channels, selectedIndex, onSelect }) {
-  return (
-    <aside className="flex w-[320px] shrink-0 flex-col gap-2 p-4">
-      <div className="mb-1 text-xs uppercase tracking-wide text-white/60">
-        Lista de Canais
-      </div>
-      <div className="flex max-h-[60vh] flex-col gap-2 overflow-auto pr-1">
-        {channels.map((ch, i) => (
-          <ChannelItem
-            key={ch.id}
-            ch={ch}
-            selected={i === selectedIndex}
-            onClick={() => onSelect(i)}
-          />
-        ))}
-      </div>
-      <div className="mt-3 rounded-lg border border-white/10 p-3 text-[11px] text-white/60">
-        Pressione <span className="rounded bg-white/10 px-1">MENU</span> para pesquisar canais
-      </div>
-    </aside>
-  );
-}
-
-function LiveBadge() {
-  return (
-    <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-2 rounded-full bg-red-600/90 px-2.5 py-1 text-xs font-bold text-white shadow">
-      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-white" /> AO VIVO
-    </div>
-  );
-}
-
-function VideoActions({ onToggleMute, muted, onFullscreen }) {
-  return (
-    <div className="absolute right-4 top-4 flex items-center gap-2">
-      <button
-        onClick={onToggleMute}
-        className="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60"
-        title={muted ? "Ativar som" : "Silenciar"}
-      >
-        {muted ? "🔇" : "🔊"}
-      </button>
-      <button
-        onClick={onFullscreen}
-        className="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60"
-        title="Tela cheia"
-      >
-        ⤢
-      </button>
-    </div>
-  );
-}
-
-function InfoBar({ title, subtitle }) {
-  return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4">
-      <div className="w-full rounded-2xl bg-gradient-to-r from-black/80 via-black/60 to-transparent p-4 text-white shadow-2xl">
-        <div className="text-sm uppercase tracking-wide text-white/70">Canal</div>
-        <div className="flex items-baseline justify-between">
-          <h3 className="truncate text-2xl font-bold md:text-3xl">{title}</h3>
-          <div className="hidden pl-4 text-right text-sm text-white/70 md:block">{subtitle}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function LiveTVLayout() {
-  const [activeTab, setActiveTab] = useState("TV");
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [muted, setMuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
-
-  const channels = useMemo(() => {
-    if (activeTab === "KIDS") return SAMPLE_CHANNELS.filter((c) => c.category === "Kids");
-    return SAMPLE_CHANNELS;
-  }, [activeTab]);
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedIndex((i) => Math.min(i + 1, channels.length - 1));
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedIndex((i) => Math.max(i - 1, 0));
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        setIsPlaying(true);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [channels.length]);
-
-  const current = channels[selectedIndex] ?? channels[0];
-  const containerRef = useRef(null);
-
-  const handleFullscreen = async () => {
-    const el = containerRef.current;
-    if (!el) return;
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
-    } else {
-      await el.requestFullscreen?.();
+    function selectChannel(idx) {
+      selectedIndex = Math.max(0, Math.min(idx, CHANNELS.length - 1));
+      const ch = CHANNELS[selectedIndex];
+      // Atualiza iframe
+      player.src = ch.streamUrl;
+      // Atualiza barra de info
+      infoTitle.textContent = ch.name;
+      infoSubtitle.textContent = ch.category;
+      // Re-render lista para atualizar destaque
+      renderList();
     }
-  };
 
-  return (
-    <div className="min-h-screen w-full bg-[radial-gradient(80%_120%_at_50%_0%,#7c1a1f_0%,#4b0d10_60%,#250608_100%)] text-white">
-      <TopBar activeTab={activeTab} onTabChange={setActiveTab} />
-      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-4 p-4 md:grid-cols-[320px_1fr]">
-        <Sidebar
-          channels={channels}
-          selectedIndex={selectedIndex}
-          onSelect={setSelectedIndex}
-        />
-        <section
-          ref={containerRef}
-          className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl"
-        >
-          <iframe
-            src={current.streamUrl}
-            title={current.name}
-            className="absolute inset-0 h-full w-full border-0"
-            allowFullScreen
-          ></iframe>
-          <LiveBadge />
-          <VideoActions
-            muted={muted}
-            onToggleMute={() => setMuted((m) => !m)}
-            onFullscreen={handleFullscreen}
-          />
-          <InfoBar title={current?.name} subtitle={current?.category} />
-        </section>
-      </main>
-      <footer className="mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-white/60">
-        Dica: use as setas do teclado para navegar pelos canais e Enter para assistir.
-      </footer>
-    </div>
-  );
-}
+    // ====== Navegação por teclado ======
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); selectChannel(selectedIndex + 1); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); selectChannel(selectedIndex - 1); }
+      if (e.key === 'Enter')     { e.preventDefault(); /* já troca com o click - mantemos o canal atual */ }
+    });
+
+    // ====== Fullscreen ======
+    document.getElementById('btnFullscreen').addEventListener('click', async () => {
+      const el = document.getElementById('playerContainer');
+      if (document.fullscreenElement) { await document.exitFullscreen(); } else { await el.requestFullscreen?.(); }
+    });
+
+    // ====== Relógio ======
+    function updateClock() {
+      const el = document.getElementById('clock');
+      el.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    updateClock(); setInterval(updateClock, 30_000);
+
+    // ====== Inicialização ======
+    renderList();
+    if (CHANNELS.length) selectChannel(0);
+  </script>
+</body>
+</html>
