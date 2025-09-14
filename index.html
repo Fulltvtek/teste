@@ -67,7 +67,7 @@
         <button id="btnFullscreen" class="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60" title="Tela cheia">⤢</button>
       </div>
       <!-- Barra de informações -->
-      <div id=\"infoBar\" class=\"pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4\">
+      <div id="infoBar" class="pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4">
         <div class="w-full rounded-2xl bg-gradient-to-r from-black/80 via-black/60 to-transparent p-4 text-white shadow-2xl">
           <div class="text-sm uppercase tracking-wide text-white/70">Canal</div>
           <div class="flex items-baseline justify-between">
@@ -103,9 +103,9 @@
     let selectedIndex = 0;
 
     // ====== Render da Sidebar ======
-    const listEl = document.getElementById('channelList');
-
     function renderList() {
+      const listEl = document.getElementById('channelList');
+      if (!listEl) return;
       listEl.innerHTML = '';
       CHANNELS.forEach((ch, idx) => {
         const btn = document.createElement('button');
@@ -164,7 +164,7 @@
     window.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowDown') { e.preventDefault(); selectChannel(selectedIndex + 1); }
       if (e.key === 'ArrowUp')   { e.preventDefault(); selectChannel(selectedIndex - 1); }
-      if (e.key === 'Enter')     { e.preventDefault(); /* já troca com o click - mantemos o canal atual */ }
+      if (e.key === 'Enter')     { e.preventDefault(); /* mantém o canal atual */ }
     });
 
     // ====== Fullscreen & InfoBar visibility ======
@@ -190,8 +190,6 @@
     });
 
     document.addEventListener('fullscreenchange', updateInfoBarVisibility);
-      if (document.fullscreenElement) { await document.exitFullscreen(); } else { await el.requestFullscreen?.(); }
-    });
 
     // ====== Relógio ======
     function updateClock() {
@@ -201,6 +199,24 @@
     }
     updateClock();
     setInterval(updateClock, 1000);
+
+    // ====== Self-tests (rudimentares) ======
+    function runSelfTests() {
+      const required = ['player', 'channelList', 'infoBar', 'infoTitle', 'infoSubtitle'];
+      const missing = required.filter(id => !document.getElementById(id));
+      if (missing.length) {
+        console.warn('[SelfTest] Elementos ausentes:', missing);
+      }
+      if (CHANNELS.length) {
+        const first = CHANNELS[0];
+        // Teste: selecionar e verificar se atualizou info + iframe
+        selectChannel(0);
+        setTimeout(() => {
+          const ok = player.src.includes(first.streamUrl);
+          console.log('[SelfTest] Player src atualizado:', ok);
+        }, 0);
+      }
+    }
 
     // ====== Inicialização ======
     function init() {
@@ -216,6 +232,7 @@
           listEl.appendChild(empty);
         }
       }
+      runSelfTests();
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
