@@ -1,176 +1,492 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fulltv - ESPN</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start; /* Alinhado ao canto esquerdo */
-            height: 100vh;
-            background: url('https://simp6.jpg5.su/images3/ESPN-1739b969f511153b4.png') no-repeat center center fixed;
-            background-size: cover;
-            font-family: 'Montserrat', sans-serif;
-            color: white;
-            text-shadow: 1px 1px 2px black;
-            padding: 10px;
-        }
-        .logo {
-            margin: 10px 0;
-        }
-        .logo img {
-            width: 50px;
-            height: auto;
-        }
-        .container {
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            width: 100%;
-            max-width: 700px;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        iframe {
-            width: 100%;
-            height: 350px; /* Tamanho fixo do player */
-            border: none;
-            border-radius: 10px;
-        }
-        .channel-bar {
-            width: 100%;
-            max-width: 700px;
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 10px;
-            padding: 10px;
-            display: flex;
-            gap: 10px;
-            overflow-x: auto; /* Rolagem horizontal */
-            overflow-y: hidden; /* Impede rolagem vertical */
-            transition: max-height 0.3s ease; /* Animação ao ocultar */
-        }
-        .channel-bar.hidden {
-            max-height: 0; /* Oculta a aba de canais */
-            padding: 0; /* Remove o espaçamento */
-            overflow: hidden; /* Oculta o conteúdo */
-        }
-        .channel-bar::-webkit-scrollbar {
-            height: 8px; /* Altura da barra de rolagem */
-        }
-        .channel-bar::-webkit-scrollbar-thumb {
-            background: rgba(30, 95, 123, 0.8);
-            border-radius: 5px;
-        }
-        .channel-button {
-            background-color: rgba(181, 181, 181, 0.2);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-family: 'Montserrat', sans-serif;
-            transition: background-color 0.3s, opacity 0.3s;
-            text-align: center;
-            padding: 10px;
-            width: 100px; /* Tamanho fixo dos botões */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-        .channel-button img {
-            width: 60px; /* Novo tamanho das logos */
-            height: 60px;
-            border-radius: 5px;
-        }
-        .channel-button:hover {
-            background-color: rgba(30, 95, 123, 0.8);
-            opacity: 0.8;
-        }
-        .toggle-channel-bar {
-            position: absolute;
-            right: -40px; /* Coloca a seta antes da aba de canais, no lado direito */
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            background-color: rgba(30, 95, 123, 0.8);
-            color: white;
-            font-size: 30px;
-            padding: 10px;
-            border-radius: 50%;
-            transition: background-color 0.3s;
-        }
-        .toggle-channel-bar:hover {
-            background-color: rgba(20, 75, 103, 0.9);
-        }
-        .toggle-channel-bar:before {
-            content: '→'; /* Seta para a direita quando aba está oculta */
-            font-size: 25px;
-        }
-        .toggle-channel-bar.open:before {
-            content: '←'; /* Seta para a esquerda quando aba está visível */
-        }
-    </style>
-</head>
-<body>
-    <!-- Logo no topo -->
-    <div class="logo">
-        <img src="https://simp6.jpg5.su/images3/capas-full-tv73f60fc1674439df.png" alt="Logo Full TV">
+import React, { useEffect, useMemo, useRef, useState } from "react";
+
+const TABS = ["TV", "DESTAQUES", "FILMES", "SÉRIES", "KIDS", "EXPLORAR"];
+
+// Lista de canais atualizada com Globo SP
+const SAMPLE_CHANNELS = [
+  {
+    id: 1,
+    number: 1,
+    name: "Globo SP",
+    quality: "HD",
+    logo: "import React, { useEffect, useMemo, useRef, useState } from "react";
+
+const TABS = ["TV", "DESTAQUES", "FILMES", "SÉRIES", "KIDS", "EXPLORAR"];
+
+// Lista de canais atualizada com Globo SP
+const SAMPLE_CHANNELS = [
+  {
+    id: 1,
+    number: 1,
+    name: "Globo SP",
+    quality: "HD",
+    logo: "https://logodownload.org/wp-content/uploads/2013/12/globo-logo-1.png",
+    category: "Abertos",
+    live: true,
+    streamUrl: "https://reidoscanais.life/embed/?id=globosp-globosaopaulo"
+  }
+];
+
+const useClock = () => {
+  const [time, setTime] = useState(() => new Date());
+  useEffect(() => {
+    const i = setInterval(() => setTime(new Date()), 30_000);
+    return () => clearInterval(i);
+  }, []);
+  return time.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+};
+
+function Badge({ children }) {
+  return (
+    <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide">
+      {children}
+    </span>
+  );
+}
+
+function TopBar({ activeTab, onTabChange }) {
+  const time = useClock();
+  return (
+    <header className="flex h-16 items-center justify-between border-b border-white/10 bg-gradient-to-r from-[#4b0d10] via-[#6d1418] to-[#4b0d10] px-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#6d1418] font-black">U</div>
+        <span className="text-white/90 font-semibold">UniTV</span>
+      </div>
+      <nav className="hidden md:flex items-center gap-6 text-sm">
+        {TABS.map((t) => (
+          <button
+            key={t}
+            onClick={() => onTabChange(t)}
+            className={`uppercase tracking-wide transition-colors ${
+              activeTab === t
+                ? "text-white font-semibold"
+                : "text-white/60 hover:text-white/90"
+            }`}
+          >
+            {t === "KIDS" ? (
+              <span className="[text-shadow:0_1px_0_rgba(0,0,0,0.2)]">
+                <span className="text-pink-300">K</span>
+                <span className="text-yellow-300">I</span>
+                <span className="text-green-300">D</span>
+                <span className="text-sky-300">S</span>
+              </span>
+            ) : (
+              t
+            )}
+          </button>
+        ))}
+      </nav>
+      <div className="flex items-center gap-4 text-white/80">
+        <button title="Pesquisar" className="hover:text-white">🔎</button>
+        <button title="Notificações" className="hover:text-white">🔔</button>
+        <button title="Perfil" className="hover:text-white">👤</button>
+        <div className="ml-2 text-white/90 tabular-nums">{time}</div>
+      </div>
+    </header>
+  );
+}
+
+function ChannelItem({ ch, selected, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`group relative flex w-full items-center gap-3 rounded-xl border border-white/5 px-3 py-2 text-left transition-all ${
+        selected
+          ? "bg-white/10 ring-2 ring-rose-400/50"
+          : "hover:bg-white/5"
+      }`}
+    >
+      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-black/30 text-lg">
+        <img src={ch.logo} alt={ch.name} className="h-6 w-6 object-contain" />
+      </div>
+      <div className="flex min-w-0 flex-col">
+        <div className="flex items-center text-[13px] text-white/90">
+          <span className="mr-2 text-white/70 w-6">{ch.number}</span>
+          <span className="truncate">{ch.name}</span>
+          <Badge>{ch.quality}</Badge>
+        </div>
+        <div className="text-[11px] text-white/55">{ch.category}</div>
+      </div>
+      {ch.live && (
+        <span className="ml-auto rounded-sm bg-red-500/90 px-1.5 py-0.5 text-[10px] font-semibold text-white">AO VIVO</span>
+      )}
+    </button>
+  );
+}
+
+function Sidebar({ channels, selectedIndex, onSelect }) {
+  return (
+    <aside className="flex w-[320px] shrink-0 flex-col gap-2 p-4">
+      <div className="mb-1 text-xs uppercase tracking-wide text-white/60">
+        Lista de Canais
+      </div>
+      <div className="flex max-h-[60vh] flex-col gap-2 overflow-auto pr-1">
+        {channels.map((ch, i) => (
+          <ChannelItem
+            key={ch.id}
+            ch={ch}
+            selected={i === selectedIndex}
+            onClick={() => onSelect(i)}
+          />
+        ))}
+      </div>
+      <div className="mt-3 rounded-lg border border-white/10 p-3 text-[11px] text-white/60">
+        Pressione <span className="rounded bg-white/10 px-1">MENU</span> para pesquisar canais
+      </div>
+    </aside>
+  );
+}
+
+function LiveBadge() {
+  return (
+    <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-2 rounded-full bg-red-600/90 px-2.5 py-1 text-xs font-bold text-white shadow">
+      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-white" /> AO VIVO
     </div>
+  );
+}
 
-    <!-- Botão de seta para mostrar/ocultar canais -->
-    <div class="toggle-channel-bar" onclick="toggleChannelBar()"></div>
-
-    <!-- Player principal -->
-    <div class="container" id="player-container">
-        <iframe src="https://reidoscanais.tv/embed/?id=espn" allow="encrypted-media" allowfullscreen></iframe>
+function VideoActions({ onToggleMute, muted, onFullscreen }) {
+  return (
+    <div className="absolute right-4 top-4 flex items-center gap-2">
+      <button
+        onClick={onToggleMute}
+        className="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60"
+        title={muted ? "Ativar som" : "Silenciar"}
+      >
+        {muted ? "🔇" : "🔊"}
+      </button>
+      <button
+        onClick={onFullscreen}
+        className="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60"
+        title="Tela cheia"
+      >
+        ⤢
+      </button>
     </div>
+  );
+}
 
-    <!-- Aba de canais -->
-    <div class="channel-bar" id="channel-bar">
-        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn')">
-            <img src="https://logodownload.org/wp-content/uploads/2015/05/espn-logo-4-1.png" alt="ESPN">
-            <span>ESPN</span>
-        </button>
-        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn2')">
-            <img src="https://logodownload.org/wp-content/uploads/2015/05/espn-logo-4-1.png" alt="ESPN 2">
-            <span>ESPN 2</span>
-        </button>
-        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn3')">
-            <img src="https://logodownload.org/wp-content/uploads/2015/05/espn-logo-4-1.png" alt="ESPN 3">
-            <span>ESPN 3</span>
-        </button>
-        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn4')">
-            <img src="https://logodownload.org/wp-content/uploads/2015/05/espn-logo-4-1.png" alt="ESPN 4">
-            <span>ESPN 4</span>
-        </button>
-        <button class="channel-button" onclick="loadPlayer('https://reidoscanais.tv/embed/?id=espn5')">
-            <img src="https://logodownload.org/wp-content/uploads/2015/05/espn-logo-4-1.png" alt="ESPN 5">
-            <span>ESPN 5</span>
-        </button>
+function InfoBar({ title, subtitle }) {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4">
+      <div className="w-full rounded-2xl bg-gradient-to-r from-black/80 via-black/60 to-transparent p-4 text-white shadow-2xl">
+        <div className="text-sm uppercase tracking-wide text-white/70">Canal</div>
+        <div className="flex items-baseline justify-between">
+          <h3 className="truncate text-2xl font-bold md:text-3xl">{title}</h3>
+          <div className="hidden pl-4 text-right text-sm text-white/70 md:block">{subtitle}</div>
+        </div>
+      </div>
     </div>
+  );
+}
 
-    <script>
-        function loadPlayer(url) {
-            const playerContainer = document.getElementById('player-container');
-            playerContainer.innerHTML = `<iframe src="${url}" allow="encrypted-media" allowfullscreen></iframe>`;
-        }
+export default function LiveTVLayout() {
+  const [activeTab, setActiveTab] = useState("TV");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [muted, setMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
 
-        function toggleChannelBar() {
-            const channelBar = document.getElementById('channel-bar');
-            const toggleButton = document.querySelector('.toggle-channel-bar');
-            channelBar.classList.toggle('hidden'); // Alterna a visibilidade da aba de canais
-            toggleButton.classList.toggle('open'); // Muda a direção da seta
-        }
-    </script>
-</body>
-</html>
+  const channels = useMemo(() => {
+    if (activeTab === "KIDS") return SAMPLE_CHANNELS.filter((c) => c.category === "Kids");
+    return SAMPLE_CHANNELS;
+  }, [activeTab]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((i) => Math.min(i + 1, channels.length - 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex((i) => Math.max(i - 1, 0));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        setIsPlaying(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [channels.length]);
+
+  const current = channels[selectedIndex] ?? channels[0];
+  const containerRef = useRef(null);
+
+  const handleFullscreen = async () => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    } else {
+      await el.requestFullscreen?.();
+    }
+  };
+
+  return (
+    <div className="min-h-screen w-full bg-[radial-gradient(80%_120%_at_50%_0%,#7c1a1f_0%,#4b0d10_60%,#250608_100%)] text-white">
+      <TopBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-4 p-4 md:grid-cols-[320px_1fr]">
+        <Sidebar
+          channels={channels}
+          selectedIndex={selectedIndex}
+          onSelect={setSelectedIndex}
+        />
+        <section
+          ref={containerRef}
+          className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl"
+        >
+          <iframe
+            src={current.streamUrl}
+            title={current.name}
+            className="absolute inset-0 h-full w-full border-0"
+            allowFullScreen
+          ></iframe>
+          <LiveBadge />
+          <VideoActions
+            muted={muted}
+            onToggleMute={() => setMuted((m) => !m)}
+            onFullscreen={handleFullscreen}
+          />
+          <InfoBar title={current?.name} subtitle={current?.category} />
+        </section>
+      </main>
+      <footer className="mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-white/60">
+        Dica: use as setas do teclado para navegar pelos canais e Enter para assistir.
+      </footer>
+    </div>
+  );
+}
+",
+    category: "Abertos",
+    live: true,
+    streamUrl: "https://reidoscanais.life/embed/?id=globosp-globosaopaulo"
+  }
+];
+
+const useClock = () => {
+  const [time, setTime] = useState(() => new Date());
+  useEffect(() => {
+    const i = setInterval(() => setTime(new Date()), 30_000);
+    return () => clearInterval(i);
+  }, []);
+  return time.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+};
+
+function Badge({ children }) {
+  return (
+    <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide">
+      {children}
+    </span>
+  );
+}
+
+function TopBar({ activeTab, onTabChange }) {
+  const time = useClock();
+  return (
+    <header className="flex h-16 items-center justify-between border-b border-white/10 bg-gradient-to-r from-[#4b0d10] via-[#6d1418] to-[#4b0d10] px-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#6d1418] font-black">U</div>
+        <span className="text-white/90 font-semibold">UniTV</span>
+      </div>
+      <nav className="hidden md:flex items-center gap-6 text-sm">
+        {TABS.map((t) => (
+          <button
+            key={t}
+            onClick={() => onTabChange(t)}
+            className={`uppercase tracking-wide transition-colors ${
+              activeTab === t
+                ? "text-white font-semibold"
+                : "text-white/60 hover:text-white/90"
+            }`}
+          >
+            {t === "KIDS" ? (
+              <span className="[text-shadow:0_1px_0_rgba(0,0,0,0.2)]">
+                <span className="text-pink-300">K</span>
+                <span className="text-yellow-300">I</span>
+                <span className="text-green-300">D</span>
+                <span className="text-sky-300">S</span>
+              </span>
+            ) : (
+              t
+            )}
+          </button>
+        ))}
+      </nav>
+      <div className="flex items-center gap-4 text-white/80">
+        <button title="Pesquisar" className="hover:text-white">🔎</button>
+        <button title="Notificações" className="hover:text-white">🔔</button>
+        <button title="Perfil" className="hover:text-white">👤</button>
+        <div className="ml-2 text-white/90 tabular-nums">{time}</div>
+      </div>
+    </header>
+  );
+}
+
+function ChannelItem({ ch, selected, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`group relative flex w-full items-center gap-3 rounded-xl border border-white/5 px-3 py-2 text-left transition-all ${
+        selected
+          ? "bg-white/10 ring-2 ring-rose-400/50"
+          : "hover:bg-white/5"
+      }`}
+    >
+      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-black/30 text-lg">
+        <img src={ch.logo} alt={ch.name} className="h-6 w-6 object-contain" />
+      </div>
+      <div className="flex min-w-0 flex-col">
+        <div className="flex items-center text-[13px] text-white/90">
+          <span className="mr-2 text-white/70 w-6">{ch.number}</span>
+          <span className="truncate">{ch.name}</span>
+          <Badge>{ch.quality}</Badge>
+        </div>
+        <div className="text-[11px] text-white/55">{ch.category}</div>
+      </div>
+      {ch.live && (
+        <span className="ml-auto rounded-sm bg-red-500/90 px-1.5 py-0.5 text-[10px] font-semibold text-white">AO VIVO</span>
+      )}
+    </button>
+  );
+}
+
+function Sidebar({ channels, selectedIndex, onSelect }) {
+  return (
+    <aside className="flex w-[320px] shrink-0 flex-col gap-2 p-4">
+      <div className="mb-1 text-xs uppercase tracking-wide text-white/60">
+        Lista de Canais
+      </div>
+      <div className="flex max-h-[60vh] flex-col gap-2 overflow-auto pr-1">
+        {channels.map((ch, i) => (
+          <ChannelItem
+            key={ch.id}
+            ch={ch}
+            selected={i === selectedIndex}
+            onClick={() => onSelect(i)}
+          />
+        ))}
+      </div>
+      <div className="mt-3 rounded-lg border border-white/10 p-3 text-[11px] text-white/60">
+        Pressione <span className="rounded bg-white/10 px-1">MENU</span> para pesquisar canais
+      </div>
+    </aside>
+  );
+}
+
+function LiveBadge() {
+  return (
+    <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-2 rounded-full bg-red-600/90 px-2.5 py-1 text-xs font-bold text-white shadow">
+      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-white" /> AO VIVO
+    </div>
+  );
+}
+
+function VideoActions({ onToggleMute, muted, onFullscreen }) {
+  return (
+    <div className="absolute right-4 top-4 flex items-center gap-2">
+      <button
+        onClick={onToggleMute}
+        className="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60"
+        title={muted ? "Ativar som" : "Silenciar"}
+      >
+        {muted ? "🔇" : "🔊"}
+      </button>
+      <button
+        onClick={onFullscreen}
+        className="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60"
+        title="Tela cheia"
+      >
+        ⤢
+      </button>
+    </div>
+  );
+}
+
+function InfoBar({ title, subtitle }) {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4">
+      <div className="w-full rounded-2xl bg-gradient-to-r from-black/80 via-black/60 to-transparent p-4 text-white shadow-2xl">
+        <div className="text-sm uppercase tracking-wide text-white/70">Canal</div>
+        <div className="flex items-baseline justify-between">
+          <h3 className="truncate text-2xl font-bold md:text-3xl">{title}</h3>
+          <div className="hidden pl-4 text-right text-sm text-white/70 md:block">{subtitle}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function LiveTVLayout() {
+  const [activeTab, setActiveTab] = useState("TV");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [muted, setMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  const channels = useMemo(() => {
+    if (activeTab === "KIDS") return SAMPLE_CHANNELS.filter((c) => c.category === "Kids");
+    return SAMPLE_CHANNELS;
+  }, [activeTab]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((i) => Math.min(i + 1, channels.length - 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex((i) => Math.max(i - 1, 0));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        setIsPlaying(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [channels.length]);
+
+  const current = channels[selectedIndex] ?? channels[0];
+  const containerRef = useRef(null);
+
+  const handleFullscreen = async () => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    } else {
+      await el.requestFullscreen?.();
+    }
+  };
+
+  return (
+    <div className="min-h-screen w-full bg-[radial-gradient(80%_120%_at_50%_0%,#7c1a1f_0%,#4b0d10_60%,#250608_100%)] text-white">
+      <TopBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-4 p-4 md:grid-cols-[320px_1fr]">
+        <Sidebar
+          channels={channels}
+          selectedIndex={selectedIndex}
+          onSelect={setSelectedIndex}
+        />
+        <section
+          ref={containerRef}
+          className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl"
+        >
+          <iframe
+            src={current.streamUrl}
+            title={current.name}
+            className="absolute inset-0 h-full w-full border-0"
+            allowFullScreen
+          ></iframe>
+          <LiveBadge />
+          <VideoActions
+            muted={muted}
+            onToggleMute={() => setMuted((m) => !m)}
+            onFullscreen={handleFullscreen}
+          />
+          <InfoBar title={current?.name} subtitle={current?.category} />
+        </section>
+      </main>
+      <footer className="mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-white/60">
+        Dica: use as setas do teclado para navegar pelos canais e Enter para assistir.
+      </footer>
+    </div>
+  );
+}
