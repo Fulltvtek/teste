@@ -10,13 +10,12 @@
   <!-- Tailwind CDN (sem build) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Fundo com textura/gradiente para lembrar UI de TV */
-    body { 
+    body {
       background: radial-gradient(80% 120% at 50% 0%, #7c1a1f 0%, #4b0d10 60%, #250608 100%);
     }
-    /* Scrollbar sutil no menu */
     .thin-scroll::-webkit-scrollbar { width: 8px; }
     .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 8px; }
+    [hidden]{display:none!important;}
   </style>
 </head>
 <body class="min-h-screen text-white">
@@ -27,14 +26,12 @@
       <span class="text-white/90 font-semibold">Fulltv</span>
     </div>
     <nav class="hidden md:flex items-center gap-6 text-sm">
-      <button class="uppercase tracking-wide text-white font-semibold">TV</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">DESTAQUES</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">FILMES</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">SÉRIES</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">
-        <span class="[text-shadow:0_1px_0_rgba(0,0,0,0.2)]"><span class="text-pink-300">K</span><span class="text-yellow-300">I</span><span class="text-green-300">D</span><span class="text-sky-300">S</span></span>
-      </button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">EXPLORAR</button>
+      <!-- Já deixo as abas no HTML para evitar "flicker" -->
+      <button class="uppercase tracking-wide text-white font-semibold">Todos os canais</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">Abertos</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">Esportes</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">Variedades</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">Kids</button>
     </nav>
     <div class="flex items-center gap-4 text-white/80">
       <button title="Pesquisar" class="hover:text-white">🔎</button>
@@ -90,33 +87,41 @@
       { id: 3, number: 3, name: "SBT",      category: "Abertos", quality: "HD", logoUrl: "https://reidoscanais.life/img/sbt.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=sbt" },
       { id: 4, number: 4, name: "BAND",     category: "Abertos", quality: "HD", logoUrl: "https://reidoscanais.life/img/band.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=band" },
       { id: 5, number: 5, name: "Record",   category: "Abertos", quality: "HD", logoUrl: "https://reidoscanais.life/img/record.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=record" },
-      { id: 6, number: 6, name: "1 - Lounge",          category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa" },
-      { id: 7, number: 7, name: "2- Dormitorio",       category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa2" },
-      { id: 8, number: 8, name: "3- Refeitorio",       category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa3" },
-      { id: 9, number: 9, name: "4 - Sala de Composição", category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa4" },
+
+      { id: 6, number: 6, name: "1 - Lounge",              category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa" },
+      { id: 7, number: 7, name: "2- Dormitorio",           category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa2" },
+      { id: 8, number: 8, name: "3- Refeitorio",           category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa3" },
+      { id: 9, number: 9, name: "4 - Sala de Composição",  category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa4" },
       { id: 10, number: 10, name: "5 - Espaço Corpo",      category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa5" },
       { id: 11, number: 11, name: "6 - Deck/Área de Treino", category: "Destaque", quality: "HD", logoUrl: "https://i.ibb.co/N6TQfNbf/Estrela-da-Casa-2-Logo-1.jpg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=estreladacasa6" },
-      { id: 12, number: 12, name: "ESPN",   category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn" },
-      { id: 13, number: 13, name: "ESPN 2", category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn2" },
-      { id: 14, number: 14, name: "ESPN 3", category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn3" },
-      { id: 15, number: 15, name: "ESPN 4", category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn4" },
-      { id: 16, number: 16, name: "ESPN 5", category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn5" },
+
+      { id: 12, number: 12, name: "ESPN",    category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn" },
+      { id: 13, number: 13, name: "ESPN 2",  category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn2" },
+      { id: 14, number: 14, name: "ESPN 3",  category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn3" },
+      { id: 15, number: 15, name: "ESPN 4",  category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn4" },
+      { id: 16, number: 16, name: "ESPN 5",  category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn5" },
       { id: 17, number: 17, name: "Sportv",  category: "Esportes", quality: "HD", logoUrl: "https://i.imgur.com/eHJ8Vm3.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=sportv" },
       { id: 18, number: 18, name: "Sportv 2",category: "Esportes", quality: "HD", logoUrl: "https://i.imgur.com/eHJ8Vm3.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=sportv2" },
       { id: 19, number: 19, name: "Sportv 3",category: "Esportes", quality: "HD", logoUrl: "https://i.imgur.com/eHJ8Vm3.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=sportv3" },
     ];
 
     // ====== Estado e mapeamentos de abas ======
-    let selectedIndex = 0;          // índice dentro da lista filtrada
-    let activeCategory = 'Abertos'; // inicia em "TV" -> Abertos
+    let selectedIndex = 0;      // índice dentro da lista filtrada
+    let activeCategory = 'ALL'; // inicia em "Todos os canais"
 
     const TAB_TO_CATEGORY = {
-      'TV': 'Abertos',
-      'DESTAQUES': 'Destaque',
-      'ESPORTES': 'Esportes',   // (antes: FILMES)
-      'VARIEDADES': 'Variedades', // (antes: SÉRIES)
+      'TODOS OS CANAIS': 'ALL',
+      'ABERTOS': 'Abertos',
+      'ESPORTES': 'Esportes',
+      'VARIEDADES': 'Variedades',
       'KIDS': 'Kids',
-      'EXPLORAR': 'ALL'
+      // compatibilidade (se alguém mudar o HTML manualmente)
+      'TV': 'Abertos',
+      'EXPLORAR': 'ALL',
+      'FILMES': 'Esportes',
+      'SÉRIES': 'Variedades',
+      'SERIES': 'Variedades',
+      'DESTAQUES': 'Destaque'
     };
 
     const normalize = (s) => (s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase().trim();
@@ -188,22 +193,19 @@
       if (!visible.length) return;
       selectedIndex = Math.max(0, Math.min(idx, visible.length - 1));
       const ch = visible[selectedIndex];
-      // Atualiza iframe
       player.src = ch.streamUrl;
-      // Atualiza barra de info
       infoTitle.textContent = ch.name;
       infoSubtitle.textContent = ch.category;
-      // Re-render lista para atualizar destaque
       renderList();
     }
 
-    // ====== Navegação por teclado (na lista filtrada) ======
+    // ====== Navegação por teclado ======
     window.addEventListener('keydown', (e) => {
       const visible = getVisibleChannels();
       if (!visible.length) return;
       if (e.key === 'ArrowDown') { e.preventDefault(); selectChannel(selectedIndex + 1); }
       if (e.key === 'ArrowUp')   { e.preventDefault(); selectChannel(selectedIndex - 1); }
-      if (e.key === 'Enter')     { e.preventDefault(); /* mantém o canal atual */ }
+      if (e.key === 'Enter')     { e.preventDefault(); }
     });
 
     // ====== Fullscreen & InfoBar visibility ======
@@ -218,7 +220,7 @@
       if (document.fullscreenElement) {
         await document.exitFullscreen();
       } else {
-        infoBar.classList.add('hidden'); // oculta imediatamente ao entrar em tela cheia
+        infoBar.classList.add('hidden');
         await el.requestFullscreen?.();
       }
     });
@@ -233,60 +235,49 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // ====== Abas (topo): renomear e ativar filtro ======
+    // ====== Abas (topo) – já com novos nomes/ordem ======
     function initTabs() {
       const nav = document.querySelector('header nav');
       if (!nav) return;
+
+      // Reforça dataset.tab e liga os cliques
       const btns = Array.from(nav.querySelectorAll('button'));
-
-      // Renomeia FILMES->ESPORTES e SÉRIES->VARIEDADES visualmente e configura dataset
       btns.forEach(btn => {
-        const raw = btn.textContent.trim();
-        const up = raw.toUpperCase();
-        let label = up;
-        if (up === 'FILMES') {
-          label = 'ESPORTES';
-          btn.textContent = label;
-        } else if (up === 'SÉRIES' || up === 'SERIES') {
-          label = 'VARIEDADES';
-          btn.textContent = label;
-        }
-        btn.dataset.tab = label;
-      });
+        const label = (btn.textContent || '').trim();
+        btn.dataset.tab = label.toUpperCase();
 
-      function setActiveTabUI(activeBtn) {
-        btns.forEach(b => {
-          const isActive = b === activeBtn;
-          b.classList.toggle('text-white', isActive);
-          b.classList.toggle('font-semibold', isActive);
-          b.classList.toggle('text-white/60', !isActive);
-        });
-      }
-
-      btns.forEach(btn => {
+        // estilo da aba ativa é aplicado dinamicamente
         btn.addEventListener('click', (e) => {
           e.preventDefault?.();
-          const key = (btn.dataset.tab || btn.textContent).trim().toUpperCase();
+          const key = (btn.dataset.tab || label).toUpperCase();
           const mapped = TAB_TO_CATEGORY[key] || 'ALL';
-          // Mantém canal atual se ele continuar na categoria; senão cai para o primeiro
+
           const prev = getVisibleChannels()[selectedIndex];
           activeCategory = mapped;
 
-          // recalcula selectedIndex preservando canal, se possível
+          // recalcula selectedIndex preservando canal quando possível
           const nowList = getVisibleChannels();
           const keepIdx = prev ? nowList.findIndex(c => c.id === prev.id) : -1;
           selectedIndex = keepIdx >= 0 ? keepIdx : 0;
 
-          setActiveTabUI(btn);
+          // atualiza UI das abas
+          btns.forEach(b => {
+            const isActive = b === btn;
+            b.classList.toggle('text-white', isActive);
+            b.classList.toggle('font-semibold', isActive);
+            b.classList.toggle('text-white/60', !isActive);
+          });
+
           renderList();
           selectChannel(selectedIndex);
         });
       });
 
-      // Estado inicial: TV -> Abertos
-      const initialBtn = btns.find(b => (b.dataset.tab || b.textContent).trim().toUpperCase() === 'TV') || btns[0];
-      setActiveTabUI(initialBtn);
-      activeCategory = TAB_TO_CATEGORY[(initialBtn.dataset.tab || initialBtn.textContent).trim().toUpperCase()] || 'ALL';
+      // Estado inicial: "Todos os canais"
+      const initialBtn = btns[0];
+      if (initialBtn) {
+        initialBtn.click(); // garante filtro e estilo ativos
+      }
     }
 
     // ====== Self-tests (rudimentares) ======
@@ -294,26 +285,12 @@
       const required = ['player', 'channelList', 'infoBar', 'infoTitle', 'infoSubtitle'];
       const missing = required.filter(id => !document.getElementById(id));
       if (missing.length) console.warn('[SelfTest] Elementos ausentes:', missing);
-      if (CHANNELS.length) {
-        const visible = getVisibleChannels();
-        if (visible.length) {
-          const first = visible[0];
-          selectChannel(0);
-          setTimeout(() => {
-            const ok = player.src.includes(first.streamUrl);
-            console.log('[SelfTest] Player src atualizado:', ok);
-          }, 0);
-        }
-      }
     }
 
     // ====== Inicialização ======
     function init() {
       try { initTabs(); } catch (e) { console.error('Tabs init error:', e); }
       try { renderList(); } catch (e) { console.error('Render list error:', e); }
-      // Seleciona o primeiro canal visível no estado inicial
-      if (getVisibleChannels().length) selectChannel(0);
-      else renderList();
       runSelfTests();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
