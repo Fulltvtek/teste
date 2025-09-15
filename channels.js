@@ -26,4 +26,12 @@ const CHANNELS = [
   { id:22, number:22, name: "Sportv 3", category: "Esportes", quality: "SD", logoUrl: "https://i.imgur.com/eHJ8Vm3.png", live: true, streamUrl: "https://embedflix.live/tv/player.php?id=sportv3" },
   { id:23, number:23, name: "Band Sports", category: "Esportes", quality: "HD", logoUrl: "https://i.imgur.com/EuPvzJe.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=bandsports" },
   { id:24, number:24, name: "Xsports", category: "Abertos", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/3/3f/Xsports_logo.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=xsports" },
+  { id:25, number:25, name: "Globonews", category: "Noticias", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/3/3f/Xsports_logo.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=globonews" },
+  { id:26, number:26, name: "Premiere 1", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiereclubes" },
+  { id:27, number:27, name: "Premiere 2", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere2" },
+  { id:28, number:28, name: "Premiere 3", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere3" },
+  { id:29, number:29, name: "Premiere 4", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere4" },
+  { id:30, number:30, name: "Premiere 2", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere5" },
+  { id:31, number:31, name: "Premiere 2", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere6" },
+  { id:32, number:32, name: "Premiere 2", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere7" },
 ];
