@@ -9,6 +9,12 @@
   <meta name="theme-color" content="#6d1418" />
   <!-- Tailwind CDN (sem build) -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Libertinus Keyboard (para "Kids") -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
+
   <style>
     body {
       background: radial-gradient(80% 120% at 50% 0%, #7c1a1f 0%, #4b0d10 60%, #250608 100%);
@@ -16,6 +22,9 @@
     .thin-scroll::-webkit-scrollbar { width: 8px; }
     .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 8px; }
     [hidden]{display:none!important;}
+
+    /* Fonte e estilo do rótulo KIDS */
+    .kids-font { font-family: "Libertinus Keyboard", ui-serif, Georgia, serif; letter-spacing: .04em; }
   </style>
 </head>
 <body class="min-h-screen text-white">
@@ -25,14 +34,28 @@
       <div class="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#6d1418] font-black">F</div>
       <span class="text-white/90 font-semibold">Fulltv</span>
     </div>
+
+    <!-- NAV com nova ordem e Kids colorido + fonte Libertinus Keyboard -->
     <nav class="hidden md:flex items-center gap-6 text-sm">
-      <!-- Já deixo as abas no HTML para evitar "flicker" -->
-      <button class="uppercase tracking-wide text-white font-semibold">Todos os canais</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">Abertos</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">Esportes</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">Variedades</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90">Kids</button>
+      <button class="uppercase tracking-wide text-white font-semibold" data-tab="TODOS OS CANAIS">Todos os canais</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90" data-tab="ABERTOS">Abertos</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90" data-tab="ESPORTES">Esportes</button>
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90" data-tab="VARIEDADES">Variedades</button>
+
+      <!-- Kids com fonte Libertinus Keyboard e letras coloridas -->
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90 kids-font" data-tab="KIDS" title="Kids">
+        <span class="[text-shadow:0_1px_0_rgba(0,0,0,0.2)]">
+          <span class="text-pink-300">K</span>
+          <span class="text-yellow-300">I</span>
+          <span class="text-green-300">D</span>
+          <span class="text-sky-300">S</span>
+        </span>
+      </button>
+
+      <!-- Nova aba: Destaques (logo após Kids) -->
+      <button class="uppercase tracking-wide text-white/60 hover:text-white/90" data-tab="DESTAQUES">Destaques</button>
     </nav>
+
     <div class="flex items-center gap-4 text-white/80">
       <button title="Pesquisar" class="hover:text-white">🔎</button>
       <button title="Notificações" class="hover:text-white">🔔</button>
@@ -115,13 +138,13 @@
       'ESPORTES': 'Esportes',
       'VARIEDADES': 'Variedades',
       'KIDS': 'Kids',
-      // compatibilidade (se alguém mudar o HTML manualmente)
+      'DESTAQUES': 'Destaque',
+      // compatibilidade (se alguém alterar texto manualmente)
       'TV': 'Abertos',
       'EXPLORAR': 'ALL',
       'FILMES': 'Esportes',
       'SÉRIES': 'Variedades',
-      'SERIES': 'Variedades',
-      'DESTAQUES': 'Destaque'
+      'SERIES': 'Variedades'
     };
 
     const normalize = (s) => (s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase().trim();
@@ -235,63 +258,50 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // ====== Abas (topo) – já com novos nomes/ordem ======
+    // ====== Abas (topo) – agora com "Destaques" e Kids customizado ======
     function initTabs() {
       const nav = document.querySelector('header nav');
       if (!nav) return;
 
-      // Reforça dataset.tab e liga os cliques
       const btns = Array.from(nav.querySelectorAll('button'));
-      btns.forEach(btn => {
-        const label = (btn.textContent || '').trim();
-        btn.dataset.tab = label.toUpperCase();
 
-        // estilo da aba ativa é aplicado dinamicamente
+      function setActive(btn) {
+        btns.forEach(b => {
+          const isActive = b === btn;
+          b.classList.toggle('text-white', isActive);
+          b.classList.toggle('font-semibold', isActive);
+          b.classList.toggle('text-white/60', !isActive);
+        });
+      }
+
+      btns.forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.preventDefault?.();
-          const key = (btn.dataset.tab || label).toUpperCase();
+          const key = (btn.dataset.tab || btn.textContent).trim().toUpperCase();
           const mapped = TAB_TO_CATEGORY[key] || 'ALL';
 
           const prev = getVisibleChannels()[selectedIndex];
           activeCategory = mapped;
 
-          // recalcula selectedIndex preservando canal quando possível
           const nowList = getVisibleChannels();
           const keepIdx = prev ? nowList.findIndex(c => c.id === prev.id) : -1;
           selectedIndex = keepIdx >= 0 ? keepIdx : 0;
 
-          // atualiza UI das abas
-          btns.forEach(b => {
-            const isActive = b === btn;
-            b.classList.toggle('text-white', isActive);
-            b.classList.toggle('font-semibold', isActive);
-            b.classList.toggle('text-white/60', !isActive);
-          });
-
+          setActive(btn);
           renderList();
           selectChannel(selectedIndex);
         });
       });
 
       // Estado inicial: "Todos os canais"
-      const initialBtn = btns[0];
-      if (initialBtn) {
-        initialBtn.click(); // garante filtro e estilo ativos
-      }
-    }
-
-    // ====== Self-tests (rudimentares) ======
-    function runSelfTests() {
-      const required = ['player', 'channelList', 'infoBar', 'infoTitle', 'infoSubtitle'];
-      const missing = required.filter(id => !document.getElementById(id));
-      if (missing.length) console.warn('[SelfTest] Elementos ausentes:', missing);
+      const initialBtn = btns.find(b => (b.dataset.tab || b.textContent).trim().toUpperCase() === 'TODOS OS CANAIS') || btns[0];
+      if (initialBtn) initialBtn.click();
     }
 
     // ====== Inicialização ======
     function init() {
       try { initTabs(); } catch (e) { console.error('Tabs init error:', e); }
       try { renderList(); } catch (e) { console.error('Render list error:', e); }
-      runSelfTests();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
