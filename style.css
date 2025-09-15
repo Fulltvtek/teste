@@ -1,0 +1,15 @@
+/* Google Fonts: Libertinus Keyboard (para "Kids") */
+@import url('https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap');
+
+body {
+  background: radial-gradient(80% 120% at 50% 0%, #7c1a1f 0%, #4b0d10 60%, #250608 100%);
+}
+
+.thin-scroll::-webkit-scrollbar { width: 8px; }
+.thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 8px; }
+
+/* Garante esconder hard */
+[hidden]{ display:none !important; }
+
+/* Fonte do rótulo Kids */
+.kids-font { font-family: "Libertinus Keyboard", ui-serif, Georgia, serif; letter-spacing: .04em; }
