@@ -5,56 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fulltv • Canais ao Vivo</title>
 
-  <!-- CSS externo -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Google Fonts -->
+  <!-- Google Fonts (Kids) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
 
-  <!-- Tailwind (opcional) -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- CSS do site -->
+  <link rel="stylesheet" href="style.css?v=2">
 </head>
-<body class="min-h-screen text-white">
-  <!-- Header -->
+<body>
+  <!-- Topbar -->
   <header class="topbar">
-    <div class="logo">F</div>
-    <span class="brand">Fulltv</span>
+    <div class="left">
+      <div class="logo">F</div>
+      <span class="brand">Fulltv</span>
+    </div>
+
+    <!-- Menu com a ordem pedida -->
     <nav class="menu">
-      <button data-tab="TODOS OS CANAIS">Todos os canais</button>
+      <button data-tab="TODOS OS CANAIS" class="active">Todos os canais</button>
       <button data-tab="ABERTOS">Abertos</button>
       <button data-tab="ESPORTES">Esportes</button>
       <button data-tab="VARIEDADES">Variedades</button>
-      <button data-tab="KIDS" class="kids-font">
-        <span class="text-pink-300">K</span>
-        <span class="text-yellow-300">I</span>
-        <span class="text-green-300">D</span>
-        <span class="text-sky-300">S</span>
+      <button data-tab="KIDS" class="kids-font" title="Kids">
+        <span class="kids-k">K</span><span class="kids-i">I</span><span class="kids-d">D</span><span class="kids-s">S</span>
       </button>
       <button data-tab="DESTAQUES">Destaques</button>
     </nav>
-    <div id="clock">--:--</div>
+
+    <div class="right">
+      <div id="clock" class="clock">--:--</div>
+    </div>
   </header>
 
-  <!-- Sidebar e Player -->
-  <main>
-    <aside>
-      <div id="channelList"></div>
+  <!-- GRID -->
+  <main class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-title">Lista de Canais</div>
+      <div id="channelList" class="channel-list thin-scroll"></div>
+      <div class="hint">↑/↓ para navegar • Enter para assistir</div>
     </aside>
-    <section>
-      <iframe id="player" src="about:blank" allowfullscreen></iframe>
-      <div id="infoBar">
-        <h3 id="infoTitle">—</h3>
-        <div id="infoSubtitle">—</div>
+
+    <!-- Player -->
+    <section id="playerContainer" class="player-container">
+      <iframe id="player" src="about:blank" title="Canal atual" allowfullscreen referrerpolicy="no-referrer"></iframe>
+
+      <div class="live-pill"><span class="dot"></span> AO VIVO</div>
+      <button id="btnFullscreen" class="btn-fs" title="Tela cheia">⤢</button>
+
+      <div id="infoBar" class="info-bar">
+        <div class="meta">
+          <div class="meta-label">Canal</div>
+          <div class="meta-row">
+            <h3 id="infoTitle" class="meta-title">—</h3>
+            <div id="infoSubtitle" class="meta-subtitle">—</div>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer>Todos os direitos reservados ao Fulltv © 2025</footer>
+  <footer class="footer">Todos os direitos reservados ao Fulltv © 2025</footer>
 
-  <!-- Scripts -->
-  <script src="channels.js"></script>
-  <script src="script.js"></script>
+  <!-- Scripts (ordem importa!) -->
+  <script src="channels.js?v=2"></script>
+  <script src="script.js?v=2"></script>
 </body>
 </html>
