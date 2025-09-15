@@ -33,5 +33,5 @@ const CHANNELS = [
   { id:29, number:29, name: "Premiere 4", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere4" },
   { id:30, number:30, name: "Premiere 5", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere5" },
   { id:31, number:31, name: "Premiere 6", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere6" },
-  { id:32, number:32, name: "Premiere 7", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere7" },
+  { id:32, number:32, name: "Premiere 7 d", category: "Esportes", quality: "HD", logoUrl: "https://reidoscanais.life/img/premiere.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=premiere7" },
 ];
