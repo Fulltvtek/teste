@@ -1,50 +1,35 @@
-/* script.js
- * Requer: channels.js (expõe const CHANNELS)
- */
-
 (function () {
-  // ====== Estado ======
-  let selectedIndex = 0;      // índice na lista visível/filtrada
-  let activeCategory = 'ALL'; // "Todos os canais"
+  // ===== Estado =====
+  let selectedIndex = 0;
+  let activeCategory = 'ALL'; // Todos os canais
 
-  // ====== Mapeamento de abas -> categoria ======
   const TAB_TO_CATEGORY = {
     'TODOS OS CANAIS': 'ALL',
     'ABERTOS': 'Abertos',
     'ESPORTES': 'Esportes',
     'VARIEDADES': 'Variedades',
     'KIDS': 'Kids',
-    'DESTAQUES': 'Destaque',
-
-    // compatibilidade (caso alguém mude o HTML)
-    'TV': 'Abertos',
-    'EXPLORAR': 'ALL',
-    'FILMES': 'Esportes',
-    'SÉRIES': 'Variedades',
-    'SERIES': 'Variedades'
+    'DESTAQUES': 'Destaque'
   };
 
-  // ====== Util ======
-  const normalize = (s) =>
-    (s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase().trim();
+  const normalize = (s) => (s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase().trim();
 
   function getVisibleChannels() {
     if (activeCategory === 'ALL') return CHANNELS || [];
     return (CHANNELS || []).filter(ch => normalize(ch.category) === normalize(activeCategory));
   }
 
-  // ====== Render da lista lateral ======
+  // ===== Render lista =====
   function renderList() {
     const listEl = document.getElementById('channelList');
     if (!listEl) return;
-
     listEl.innerHTML = '';
-    const visible = getVisibleChannels();
 
+    const visible = getVisibleChannels();
     if (!visible.length) {
       const empty = document.createElement('div');
       empty.textContent = 'Nenhum canal nesta categoria.';
-      empty.style.opacity = '0.8';
+      empty.style.opacity = '.8';
       listEl.appendChild(empty);
       return;
     }
@@ -52,13 +37,10 @@
     visible.forEach((ch, idx) => {
       const btn = document.createElement('button');
       btn.className = 'channel-item';
-      // destaque visual do item ativo (se quiser, defina .channel-item.active no style.css)
       if (idx === selectedIndex) btn.classList.add('active');
 
-      // bloco do logo
       const logoWrap = document.createElement('div');
       logoWrap.className = 'channel-logo';
-
       if (ch.logoUrl) {
         const img = document.createElement('img');
         img.src = ch.logoUrl;
@@ -72,7 +54,6 @@
         logoWrap.appendChild(fallback);
       }
 
-      // textos
       const textWrap = document.createElement('div');
       textWrap.className = 'channel-texts';
 
@@ -113,7 +94,7 @@
     });
   }
 
-  // ====== Player / seleção ======
+  // ===== Player =====
   const player = () => document.getElementById('player');
   const infoTitle = () => document.getElementById('infoTitle');
   const infoSubtitle = () => document.getElementById('infoSubtitle');
@@ -133,35 +114,24 @@
     if (t) t.textContent = ch.name || '—';
     if (s) s.textContent = ch.category || '—';
 
-    renderList(); // atualiza destaque na lista
+    renderList();
   }
 
-  // ====== Abas do topo ======
+  // ===== Abas =====
   function initTabs() {
-    const btns = Array.from(document.querySelectorAll('header nav button'));
+    const btns = Array.from(document.querySelectorAll('header nav.menu button'));
     if (!btns.length) return;
 
     function setActiveTabUI(activeBtn) {
-      btns.forEach(b => {
-        const isActive = b === activeBtn;
-        // Se usa Tailwind no HTML, isso já dá um visual legal:
-        b.classList.toggle('text-white', isActive);
-        b.classList.toggle('font-semibold', isActive);
-        b.classList.toggle('text-white/60', !isActive);
-      });
+      btns.forEach(b => b.classList.toggle('active', b === activeBtn));
     }
 
     btns.forEach(btn => {
-      // garante dataset.tab em MAIÚSCULAS
-      if (!btn.dataset.tab) btn.dataset.tab = normalize(btn.textContent);
-
       btn.addEventListener('click', (e) => {
         e.preventDefault?.();
-
         const key = normalize(btn.dataset.tab || btn.textContent);
         const mapped = TAB_TO_CATEGORY[key] || 'ALL';
 
-        // tenta preservar o canal ao trocar de aba
         const prev = getVisibleChannels()[selectedIndex];
         activeCategory = mapped;
 
@@ -175,33 +145,24 @@
       });
     });
 
-    // Estado inicial: "Todos os canais"
+    // Estado inicial
     const initial = btns.find(b => normalize(b.dataset.tab || b.textContent) === 'TODOS OS CANAIS') || btns[0];
     if (initial) initial.click();
   }
 
-  // ====== Teclado ======
+  // ===== Teclado =====
   function initKeyboard() {
     window.addEventListener('keydown', (e) => {
       const visible = getVisibleChannels();
       if (!visible.length) return;
 
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        selectChannel(selectedIndex + 1);
-      }
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        selectChannel(selectedIndex - 1);
-      }
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        // já está selecionado -> nada a fazer
-      }
+      if (e.key === 'ArrowDown') { e.preventDefault(); selectChannel(selectedIndex + 1); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); selectChannel(selectedIndex - 1); }
+      if (e.key === 'Enter')     { e.preventDefault(); }
     });
   }
 
-  // ====== Relógio (opcional) ======
+  // ===== Relógio =====
   function initClock() {
     const el = document.getElementById('clock');
     if (!el) return;
@@ -209,16 +170,14 @@
       const now = new Date();
       el.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     };
-    tick();
-    setInterval(tick, 1000);
+    tick(); setInterval(tick, 1000);
   }
 
-  // ====== Fullscreen (opcional, só se tiver botão/ids no HTML) ======
+  // ===== Fullscreen =====
   function initFullscreen() {
     const btn = document.getElementById('btnFullscreen');
     const container = document.getElementById('playerContainer');
     const infoBar = document.getElementById('infoBar');
-
     if (!btn || !container) return;
 
     function updateInfoBarVisibility() {
@@ -226,33 +185,21 @@
       if (infoBar) infoBar.style.display = isFS ? 'none' : '';
     }
     btn.addEventListener('click', async () => {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else {
-        updateInfoBarVisibility(); // esconde já ao entrar
-        await container.requestFullscreen?.();
-      }
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else { updateInfoBarVisibility(); await container.requestFullscreen?.(); }
     });
     document.addEventListener('fullscreenchange', updateInfoBarVisibility);
   }
 
-  // ====== Inicialização ======
+  // ===== Init =====
   function init() {
-    if (!Array.isArray(CHANNELS)) {
-      console.error('channels.js não carregado ou CHANNELS inválido.');
-      return;
-    }
+    if (!Array.isArray(CHANNELS)) { console.error('channels.js não carregado.'); return; }
     initTabs();
     renderList();
     if (getVisibleChannels().length) selectChannel(0);
     initKeyboard();
     initClock();
-    initFullscreen(); // só ativa se existir no HTML
+    initFullscreen();
   }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();
