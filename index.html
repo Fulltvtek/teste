@@ -4,89 +4,57 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fulltv • Canais ao Vivo</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%236d1418'/%3E%3Crect x='14' y='14' width='36' height='10' fill='%23ffffff'/%3E%3Crect x='14' y='27' width='20' height='10' fill='%23ffffff'/%3E%3Crect x='14' y='14' width='10' height='36' fill='%23ffffff'/%3E%3C/svg%3E" />
-  <meta name="theme-color" content="#6d1418" />
-  <!-- Tailwind (sem build) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- CSS separado -->
+
+  <!-- CSS externo -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
+
+  <!-- Tailwind (opcional) -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen text-white">
-  <!-- Topbar -->
-  <header class="flex h-16 items-center justify-between border-b border-white/10 bg-gradient-to-r from-[#4b0d10] via-[#6d1418] to-[#4b0d10] px-4">
-    <div class="flex items-center gap-3">
-      <div class="flex h-8 w-8 items-center justify-center rounded-md bg-white text-[#6d1418] font-black">F</div>
-      <span class="text-white/90 font-semibold">Fulltv</span>
-    </div>
-
-    <!-- Abas na ordem pedida -->
-    <nav class="hidden md:flex items-center gap-6 text-sm">
-      <button class="uppercase tracking-wide text-white font-semibold" data-tab="TODOS OS CANAIS">Todos os canais</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90" data-tab="ABERTOS">Abertos</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90" data-tab="ESPORTES">Esportes</button>
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90" data-tab="VARIEDADES">Variedades</button>
-
-      <!-- Kids com fonte Libertinus Keyboard e letras coloridas -->
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90 kids-font" data-tab="KIDS" title="Kids">
-        <span class="[text-shadow:0_1px_0_rgba(0,0,0,0.2)]">
-          <span class="text-pink-300">K</span>
-          <span class="text-yellow-300">I</span>
-          <span class="text-green-300">D</span>
-          <span class="text-sky-300">S</span>
-        </span>
+  <!-- Header -->
+  <header class="topbar">
+    <div class="logo">F</div>
+    <span class="brand">Fulltv</span>
+    <nav class="menu">
+      <button data-tab="TODOS OS CANAIS">Todos os canais</button>
+      <button data-tab="ABERTOS">Abertos</button>
+      <button data-tab="ESPORTES">Esportes</button>
+      <button data-tab="VARIEDADES">Variedades</button>
+      <button data-tab="KIDS" class="kids-font">
+        <span class="text-pink-300">K</span>
+        <span class="text-yellow-300">I</span>
+        <span class="text-green-300">D</span>
+        <span class="text-sky-300">S</span>
       </button>
-
-      <!-- Destaques logo após Kids -->
-      <button class="uppercase tracking-wide text-white/60 hover:text-white/90" data-tab="DESTAQUES">Destaques</button>
+      <button data-tab="DESTAQUES">Destaques</button>
     </nav>
-
-    <div class="flex items-center gap-4 text-white/80">
-      <button title="Pesquisar" class="hover:text-white">🔎</button>
-      <button title="Notificações" class="hover:text-white">🔔</button>
-      <button title="Perfil" class="hover:text-white">👤</button>
-      <div id="clock" class="ml-2 text-white/90 tabular-nums">--:--</div>
-    </div>
+    <div id="clock">--:--</div>
   </header>
 
-  <!-- GRID -->
-  <main class="mx-auto grid max-w-7xl grid-cols-1 gap-4 p-4 md:grid-cols-[320px_1fr]">
-    <!-- Sidebar canais -->
-    <aside class="flex w-[320px] shrink-0 flex-col gap-2 p-1">
-      <div class="mb-1 text-xs uppercase tracking-wide text-white/60">Lista de Canais</div>
-      <div id="channelList" class="thin-scroll flex max-h-[60vh] flex-col gap-2 overflow-auto pr-1"></div>
-      <div class="mt-3 rounded-lg border border-white/10 p-3 text-[11px] text-white/60">
-        Pressione <span class="rounded bg-white/10 px-1">↑/↓</span> para navegar e <span class="rounded bg-white/10 px-1">Enter</span> para assistir
-      </div>
+  <!-- Sidebar e Player -->
+  <main>
+    <aside>
+      <div id="channelList"></div>
     </aside>
-
-    <!-- Player -->
-    <section id="playerContainer" class="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
-      <iframe id="player" src="about:blank" title="Canal atual" class="absolute inset-0 h-full w-full border-0" allowfullscreen referrerpolicy="no-referrer"></iframe>
-
-      <div class="pointer-events-none absolute left-4 top-4 flex items-center gap-2 rounded-full bg-red-600/90 px-2.5 py-1 text-xs font-bold text-white shadow">
-        <span class="inline-block h-2 w-2 animate-pulse rounded-full bg-white"></span> AO VIVO
-      </div>
-
-      <div class="absolute right-4 top-4 flex items-center gap-2 z-10">
-        <button id="btnFullscreen" class="rounded-full bg-black/40 px-2 py-1 text-white/90 backdrop-blur hover:bg-black/60" title="Tela cheia">⤢</button>
-      </div>
-
-      <div id="infoBar" class="pointer-events-none absolute inset-x-0 bottom-0 flex items-end p-4">
-        <div class="w-full rounded-2xl bg-gradient-to-r from-black/80 via-black/60 to-transparent p-4 text-white shadow-2xl">
-          <div class="text-sm uppercase tracking-wide text-white/70">Canal</div>
-          <div class="flex items-baseline justify-between">
-            <h3 id="infoTitle" class="truncate text-2xl font-bold md:text-3xl">—</h3>
-            <div id="infoSubtitle" class="hidden pl-4 text-right text-sm text-white/70 md:block">—</div>
-          </div>
-        </div>
+    <section>
+      <iframe id="player" src="about:blank" allowfullscreen></iframe>
+      <div id="infoBar">
+        <h3 id="infoTitle">—</h3>
+        <div id="infoSubtitle">—</div>
       </div>
     </section>
   </main>
 
-  <footer class="mx-auto max-w-7xl px-4 pb-6 text-center text-xs text-white/60">Todos os direitos reservados ao Fulltv © 2025</footer>
+  <footer>Todos os direitos reservados ao Fulltv © 2025</footer>
 
-  <!-- Scripts: canais primeiro, depois a lógica -->
+  <!-- Scripts -->
   <script src="channels.js"></script>
-  <script src="main.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
