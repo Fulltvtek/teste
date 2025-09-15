@@ -18,7 +18,7 @@ const CHANNELS = [
   { id:14, number:14, name: "ESPN 3", category: "Esportes",   quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn3" },
   { id:15, number:15, name: "ESPN 4", category: "Esportes",   quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn4" },
   { id:16, number:16, name: "ESPN 5", category: "Esportes",   quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/512px-ESPN_wordmark.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=espn5" },
-  { id:17, number:17, name: "Sportv", category: "Esportes",   quality: "HD", logoUrl: "https://i.imgur.com/eHJ8Vm3.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=sportvalternativo" },
-  { id:18, number:18, name: "Sportv 2", category: "Esportes", quality: "HD", logoUrl: "https://i.imgur.com/eHJ8Vm3.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=sportv2" },
+  { id:17, number:17, name: "Sportv", category: "Esportes",   quality: "HD", logoUrl: "https://i.imgur.com/eHJ8Vm3.png", live: true, streamUrl: "https://embedflix.live/tv/player.php?id=sportv" },
+  { id:18, number:18, name: "Sportv 2", category: "Esportes", quality: "HD", logoUrl: "https://i.imgur.com/eHJ8Vm3.png", live: true, streamUrl: "https://embedflix.live/tv/player.php?id=sportv2" },
   { id:19, number:19, name: "Sportv 3", category: "Esportes", quality: "HD", logoUrl: "https://i.imgur.com/eHJ8Vm3.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=sportv3" },
 ];
