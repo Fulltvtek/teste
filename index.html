@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
 
   <!-- CSS do site -->
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <!-- Topbar -->
@@ -21,7 +21,7 @@
       <span class="brand">Fulltv</span>
     </div>
 
-    <!-- Menu com a ordem pedida -->
+    <!-- Menu na ordem pedida -->
     <nav class="menu">
       <button data-tab="TODOS OS CANAIS" class="active">Todos os canais</button>
       <button data-tab="ABERTOS">Abertos</button>
@@ -49,7 +49,15 @@
 
     <!-- Player -->
     <section id="playerContainer" class="player-container">
-      <iframe id="player" src="about:blank" title="Canal atual" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      <iframe
+        id="player"
+        src="about:blank"
+        title="Canal atual"
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        allowfullscreen
+        referrerpolicy="no-referrer"
+        playsinline
+      ></iframe>
 
       <div class="live-pill"><span class="dot"></span> AO VIVO</div>
       <button id="btnFullscreen" class="btn-fs" title="Tela cheia">⤢</button>
@@ -69,7 +77,7 @@
   <footer class="footer">Todos os direitos reservados ao Fulltv © 2025</footer>
 
   <!-- Scripts (ordem importa!) -->
-  <script src="channels.js?v=2"></script>
-  <script src="script.js?v=2"></script>
+  <script src="channels.js?v=3"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>
