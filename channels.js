@@ -48,4 +48,5 @@ const CHANNELS = [
   { id:43, number:43, name: "Discovery Kids", category: "Kids", quality: "HD", logoUrl: "https://i.imgur.com/C0VEHXU.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=discoverykids" },
   { id:44, number:44, name: "Nickelodeon", category: "Kids", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Nickelodeon_2009_logo.svg/512px-Nickelodeon_2009_logo.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=nickelodeon" },
   { id:45, number:45, name: "Nick jr", category: "Kids", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Nick_Jr._logo_2009.svg/512px-Nick_Jr._logo_2009.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=nickjr" },
+  { id:46, number:46, name: "Gloobinho", category: "Kids", quality: "HD", logoUrl: "https://i.imgur.com/UWkHErt.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=gloobinho" },
 ];
