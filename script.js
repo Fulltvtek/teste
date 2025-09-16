@@ -1,4 +1,18 @@
 (function () {
+  // ===== Fonte de canais (preview > publicado) =====
+  const RAW_CHANNELS = (() => {
+    // 1) se houver pré-visualização salva no navegador, usa ela
+    try {
+      const ov = localStorage.getItem('CHANNELS_OVERRIDE');
+      if (ov) {
+        const arr = JSON.parse(ov);
+        if (Array.isArray(arr)) return arr;
+      }
+    } catch(e){}
+    // 2) senão, usa o channels.js publicado
+    return (typeof CHANNELS !== 'undefined' && Array.isArray(CHANNELS)) ? CHANNELS : [];
+  })();
+
   // ===== Estado =====
   let selectedIndex = 0;
   let activeCategory = 'ALL'; // Todos os canais
@@ -15,11 +29,11 @@
   const normalize = (s) => (s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase().trim();
 
   function getVisibleChannels() {
-    if (activeCategory === 'ALL') return CHANNELS || [];
-    return (CHANNELS || []).filter(ch => normalize(ch.category) === normalize(activeCategory));
+    if (activeCategory === 'ALL') return RAW_CHANNELS || [];
+    return (RAW_CHANNELS || []).filter(ch => normalize(ch.category) === normalize(activeCategory));
   }
 
-  // ===== Play Shield (primeiro clique) =====
+  // ===== Play Shield (primeiro clique) — opcionalmente mantenho, ajuda contra popups quando sem sandbox =====
   const PLAY_GATE_KEY = 'playGateDone';
   function showPlayShield(){ const el=document.getElementById('playShield'); if(el) el.style.display='flex'; }
   function hidePlayShield(){ const el=document.getElementById('playShield'); if(el) el.style.display='none'; }
@@ -129,8 +143,7 @@
     if (t) t.textContent = ch.name || '—';
     if (s) s.textContent = ch.category || '—';
 
-    // se o usuário ainda não “liberou” o primeiro clique, mostra o shield
-    if (localStorage.getItem(PLAY_GATE_KEY) !== '1') showPlayShield();
+    if (localStorage.getItem('playGateDone') !== '1') showPlayShield();
 
     renderList();
   }
@@ -161,7 +174,6 @@
       });
     });
 
-    // Estado inicial
     const initial = btns.find(b => normalize(b.dataset.tab || b.textContent) === 'TODOS OS CANAIS') || btns[0];
     if (initial) initial.click();
   }
@@ -209,7 +221,7 @@
 
   // ===== Init =====
   function init() {
-    if (!Array.isArray(CHANNELS)) { console.error('channels.js não carregado.'); return; }
+    if (!Array.isArray(RAW_CHANNELS)) { console.error('Nenhuma lista de canais disponível.'); return; }
     initTabs();
     renderList();
     if (getVisibleChannels().length) selectChannel(0);
