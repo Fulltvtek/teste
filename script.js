@@ -19,6 +19,21 @@
     return (CHANNELS || []).filter(ch => normalize(ch.category) === normalize(activeCategory));
   }
 
+  // ===== Play Shield (primeiro clique) =====
+  const PLAY_GATE_KEY = 'playGateDone';
+  function showPlayShield(){ const el=document.getElementById('playShield'); if(el) el.style.display='flex'; }
+  function hidePlayShield(){ const el=document.getElementById('playShield'); if(el) el.style.display='none'; }
+  function initPlayShield(){
+    const shield = document.getElementById('playShield');
+    const btn = document.getElementById('playBtn');
+    const used = localStorage.getItem(PLAY_GATE_KEY) === '1';
+    if(!shield) return;
+    if(used){ hidePlayShield(); return; }
+    const accept = () => { localStorage.setItem(PLAY_GATE_KEY,'1'); hidePlayShield(); };
+    shield.addEventListener('click', accept);
+    if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); accept(); });
+  }
+
   // ===== Render lista =====
   function renderList() {
     const listEl = document.getElementById('channelList');
@@ -114,6 +129,9 @@
     if (t) t.textContent = ch.name || '—';
     if (s) s.textContent = ch.category || '—';
 
+    // se o usuário ainda não “liberou” o primeiro clique, mostra o shield
+    if (localStorage.getItem(PLAY_GATE_KEY) !== '1') showPlayShield();
+
     renderList();
   }
 
@@ -122,9 +140,7 @@
     const btns = Array.from(document.querySelectorAll('header nav.menu button'));
     if (!btns.length) return;
 
-    function setActiveTabUI(activeBtn) {
-      btns.forEach(b => b.classList.toggle('active', b === activeBtn));
-    }
+    const setActiveTabUI = (activeBtn) => btns.forEach(b => b.classList.toggle('active', b === activeBtn));
 
     btns.forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -200,6 +216,7 @@
     initKeyboard();
     initClock();
     initFullscreen();
+    initPlayShield();
   }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();
