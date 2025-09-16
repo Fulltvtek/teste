@@ -37,10 +37,10 @@ body{
 
 /* Kids font + cores */
 .kids-font{font-family:"Libertinus Keyboard", ui-serif, Georgia, serif; letter-spacing:.04em}
-.kids-k{color:#f472b6}   /* pink-400 aprox */
-.kids-i{color:#facc15}   /* yellow-400 */
-.kids-d{color:#22c55e}   /* green-500 */
-.kids-s{color:#38bdf8}   /* sky-400 */
+.kids-k{color:#f472b6}
+.kids-i{color:#facc15}
+.kids-d{color:#22c55e}
+.kids-s{color:#38bdf8}
 
 /* Layout */
 .layout{
@@ -87,7 +87,7 @@ body{
   position:absolute; left:16px; top:12px;
   display:flex; align-items:center; gap:8px;
   background:#be123c; color:#fff; font-weight:800; font-size:12px;
-  border-radius:999px; padding:6px 10px;
+  border-radius:999px; padding:6px 10px; z-index:2;
 }
 .live-pill .dot{width:8px;height:8px;border-radius:999px;background:#fff; animation:pulse 1.2s infinite}
 @keyframes pulse{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
@@ -114,3 +114,19 @@ body{
 @media (max-width: 900px){
   .layout{grid-template-columns:1fr}
 }
+
+/* --- Play Shield (primeiro clique) --- */
+.play-shield{
+  position:absolute; inset:0; z-index:3;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(0deg, rgba(0,0,0,.45), rgba(0,0,0,.15));
+  backdrop-filter: blur(1px);
+}
+.play-btn{
+  appearance:none; border:0; cursor:pointer;
+  font-weight:800; font-size:18px; color:#fff;
+  padding:12px 18px; border-radius:999px;
+  background:rgba(0,0,0,.55);
+  box-shadow:0 8px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.18);
+}
+.play-btn:hover{ background:rgba(0,0,0,.75) }
