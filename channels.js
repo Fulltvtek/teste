@@ -46,4 +46,6 @@ const CHANNELS = [
   { id:41, number:41, name: "Prime Video 3", category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=primevideo3" },
   { id:42, number:42, name: "Animal Planet", category: "Variedades", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/2018_Animal_Planet_logo.svg/512px-2018_Animal_Planet_logo.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=animalplanet" },
   { id:43, number:43, name: "Discovery Kids", category: "Kids", quality: "HD", logoUrl: "https://i.imgur.com/C0VEHXU.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=discoverykids" },
+  { id:44, number:44, name: "Nickelodeon", category: "Kids", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Nickelodeon_2009_logo.svg/512px-Nickelodeon_2009_logo.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=nickelodeon" },
+  { id:45, number:45, name: "Nick jr", category: "Kids", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Nick_Jr._logo_2009.svg/512px-Nick_Jr._logo_2009.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=nickjr" },
 ];
