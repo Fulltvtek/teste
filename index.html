@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
 
   <!-- CSS do site -->
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <!-- Topbar -->
@@ -49,6 +49,11 @@
 
     <!-- Player -->
     <section id="playerContainer" class="player-container">
+      <!-- Overlay anti-primeiro clique -->
+      <div id="playShield" class="play-shield" style="display:flex">
+        <button id="playBtn" class="play-btn" type="button" aria-label="Reproduzir">▶ Reproduzir</button>
+      </div>
+
       <iframe
         id="player"
         src="about:blank"
@@ -57,6 +62,7 @@
         allowfullscreen
         referrerpolicy="no-referrer"
         playsinline
+        sandbox="allow-same-origin allow-scripts allow-forms allow-presentation"
       ></iframe>
 
       <div class="live-pill"><span class="dot"></span> AO VIVO</div>
@@ -77,7 +83,7 @@
   <footer class="footer">Todos os direitos reservados ao Fulltv © 2025</footer>
 
   <!-- Scripts (ordem importa!) -->
-  <script src="channels.js?v=3"></script>
-  <script src="script.js?v=3"></script>
+  <script src="channels.js?v=4"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>
