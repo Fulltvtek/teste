@@ -61,4 +61,5 @@ const CHANNELS = [
 { id:56, number:56, name: "National Geographic", category: "Variedades", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Natgeologo.svg/512px-Natgeologo.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=nationalgeographic" },
 { id:57, number:57, name: "GNT",                 category: "Variedades", quality: "HD", logoUrl: "https://i.imgur.com/XymcvMy.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=gnt" },
 { id:58, number:58, name: "Discovery ID",        category: "Variedades", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/InvestigationDiscoveryLogo2020.svg/langfr-512px-InvestigationDiscoveryLogo2020.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=discoveryid" },
+  { id:59, number:59, name: "Discovery World",        category: "Variedades", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/InvestigationDiscoveryLogo2020.svg/langfr-512px-InvestigationDiscoveryLogo2020.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=discoveryworld" },
 ];
