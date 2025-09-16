@@ -44,5 +44,5 @@ const CHANNELS = [
   { id:40, number:40, name: "Prime Video 2", category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=primevideo2" },
   { id:41, number:41, name: "Prime Video 3", category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=primevideo3" },
   { id:41, number:41, name: "Prime Video 3", category: "Esportes", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg", live: true, streamUrl: "https://reidoscanais.life/embed/?id=primevideo3" },
-  { id:41, number:42, name: "Animal Planet", category: "Entreterimento", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/2018_Animal_Planet_logo.svg/512px-2018_Animal_Planet_logo.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=animalplanet" },
+  { id:41, number:42, name: "Animal Planet", category: "Variedades", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/2018_Animal_Planet_logo.svg/512px-2018_Animal_Planet_logo.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=animalplanet" },
 ];
