@@ -1,10 +1,8 @@
-/* admin.js — Painel Fulltv (com ID estável, excluir/renumerar, inserir deslocando) */
+/* admin.js — Painel Fulltv (ID sempre novo, exporta em aba) */
 (function(){
-  // Carrega a lista publicada (channels.js)
   let channels = Array.isArray(CHANNELS) ? JSON.parse(JSON.stringify(CHANNELS)) : [];
-  let editIndex = null; // índice atual (na lista ordenada)
+  let editIndex = null;
 
-  // DOM helpers
   const $ = (id) => document.getElementById(id);
   const tbody = $('tbody');
 
@@ -14,36 +12,11 @@
   const compare = (a,b) => (toInt(a.number)-toInt(b.number)) || (a.name||'').localeCompare(b.name||'');
 
   function sortByNumber(){ channels.sort(compare); }
+  function clampForAdd(n){ return Math.min(Math.max(1, n), channels.length+1); }
+  function clampForEdit(n){ return Math.min(Math.max(1, n), channels.length+1); }
 
-  function clampForAdd(n){
-    const max = channels.length + 1;
-    return Math.min(Math.max(1, n), max);
-  }
-
-  function clampForEdit(n){
-    // durante edição removemos 1 item → posição válida ainda é [1..len+1]
-    const max = channels.length + 1;
-    return Math.min(Math.max(1, n), max);
-  }
-
-  function shiftUpFrom(n){
-    // empurra  n, n+1, n+2, ...  =>  +1
-    channels.forEach(c => { if (toInt(c.number) >= n) c.number = toInt(c.number)+1; });
-  }
-
-  function shiftDownFrom(n){
-    // puxa    (n+1)->n, (n+2)->(n+1), ...
-    channels.forEach(c => { if (toInt(c.number) > n) c.number = toInt(c.number)-1; });
-  }
-
-  function ensureIds(){
-    // garante ID único
-    const seen = new Set();
-    channels.forEach(c=>{
-      if(!c.id || seen.has(c.id)) c.id = genId();
-      seen.add(c.id);
-    });
-  }
+  function shiftUpFrom(n){ channels.forEach(c => { if (toInt(c.number) >= n) c.number = toInt(c.number)+1; }); }
+  function shiftDownFrom(n){ channels.forEach(c => { if (toInt(c.number) > n) c.number = toInt(c.number)-1; }); }
 
   function readForm(){
     const data = {
@@ -56,7 +29,7 @@
       live:     $('fLive').checked
     };
     if (!data.name) throw new Error('Informe o nome do canal');
-    if (!data.streamUrl) throw new Error('Informe o link do player (streamUrl)');
+    if (!data.streamUrl) throw new Error('Informe o link do player');
     if (Number.isNaN(data.number)) throw new Error('Informe o número do canal');
     return data;
   }
@@ -70,198 +43,110 @@
     $('fStream').value = ch.streamUrl ?? '';
     $('fLive').checked = !!ch.live;
   }
+  function resetForm(){ editIndex=null; $('fNumber').value=''; $('fName').value=''; $('fCategory').value='Abertos'; $('fQuality').value='HD'; $('fLogo').value=''; $('fStream').value=''; $('fLive').checked=true; }
 
-  function resetForm(){
-    editIndex = null;
-    $('fNumber').value = '';
-    $('fName').value = '';
-    $('fCategory').value = 'Abertos';
-    $('fQuality').value = 'HD';
-    $('fLogo').value = '';
-    $('fStream').value = '';
-    $('fLive').checked = true;
-  }
-
-  // ===== CRUD com regras de numeração =====
+  // ===== CRUD =====
   function addNew(data){
     sortByNumber();
-    ensureIds();
     const n = clampForAdd(toInt(data.number));
-    shiftUpFrom(n); // abre espaço
+    shiftUpFrom(n);
     channels.push({ id: genId(), ...data, number: n });
-    sortByNumber();
-    renderTable();
-    resetForm();
+    sortByNumber(); renderTable(); resetForm();
   }
 
   function updateExisting(idx, data){
     sortByNumber();
-    ensureIds();
-
-    const current = channels[idx];
-    if (!current) return;
-
-    const oldN = toInt(current.number);
-    const newN = clampForEdit(toInt(data.number));
-
-    // Remove primeiro
-    const keptId = current.id || genId();
-    channels.splice(idx, 1);
-
-    // Fecha o buraco do número antigo
-    shiftDownFrom(oldN);
-
-    // Insere no novo número, abrindo espaço
+    const old = channels[idx]; if (!old) return;
+    const oldN = toInt(old.number), newN = clampForEdit(toInt(data.number));
+    channels.splice(idx,1); shiftDownFrom(oldN);
     shiftUpFrom(newN);
-    channels.push({ id: keptId, ...data, number: newN });
-
-    sortByNumber();
-    renderTable();
-    resetForm();
+    channels.push({ id: genId(), ...data, number: newN });
+    sortByNumber(); renderTable(); resetForm();
   }
 
   function deleteAt(idx){
     sortByNumber();
-    const removed = channels[idx];
-    if (!removed) return;
+    const removed = channels[idx]; if (!removed) return;
     const n = toInt(removed.number);
-    channels.splice(idx,1);
-    // renumera puxando os seguintes
-    shiftDownFrom(n);
-    sortByNumber();
-    renderTable();
+    channels.splice(idx,1); shiftDownFrom(n);
+    sortByNumber(); renderTable();
   }
 
   // ===== Tabela =====
   function renderTable(){
-    sortByNumber();
-    tbody.innerHTML = '';
+    sortByNumber(); tbody.innerHTML='';
     channels.forEach((ch, idx) => {
-      const tr = document.createElement('tr');
-
-      const tdNum = document.createElement('td'); tdNum.textContent = ch.number ?? '';
-      const tdName= document.createElement('td'); tdName.textContent = ch.name ?? '';
-      const tdCat = document.createElement('td'); tdCat.textContent = ch.category ?? '';
-      const tdQl  = document.createElement('td'); tdQl.textContent = ch.quality ?? '';
-      const tdLv  = document.createElement('td'); tdLv.textContent = ch.live ? 'Sim':'Não';
-      const tdLo  = document.createElement('td'); tdLo.innerHTML = ch.logoUrl ? `<a href="${ch.logoUrl}" target="_blank">logo</a>` : '—';
-      const tdSt  = document.createElement('td'); tdSt.innerHTML = ch.streamUrl ? `<a href="${ch.streamUrl}" target="_blank">abrir</a>` : '—';
-
-      const tdAct = document.createElement('td'); tdAct.className = 'td-actions';
-      const bEdit = document.createElement('button'); bEdit.className='btn'; bEdit.textContent='Editar';
-      const bDel  = document.createElement('button'); bDel.className='btn danger'; bDel.textContent='Excluir';
-      const bUp   = document.createElement('button'); bUp.className='btn'; bUp.textContent='↑';
-      const bDown = document.createElement('button'); bDown.className='btn'; bDown.textContent='↓';
-
-      bEdit.onclick = () => { editIndex = idx; fillForm(ch); window.scrollTo({top:0,behavior:'smooth'}); };
-      bDel.onclick  = () => { if(confirm(`Excluir "${ch.name}" (nº ${ch.number})?`)){ deleteAt(idx); } };
-      bUp.onclick   = () => {
-        if (idx > 0) {
-          // troca números com o anterior
-          const prev = channels[idx-1];
-          const t = prev.number; prev.number = ch.number; ch.number = t;
-          sortByNumber(); renderTable();
-        }
-      };
-      bDown.onclick = () => {
-        if (idx < channels.length-1) {
-          const next = channels[idx+1];
-          const t = next.number; next.number = ch.number; ch.number = t;
-          sortByNumber(); renderTable();
-        }
-      };
-
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${ch.number??''}</td>
+        <td>${ch.name??''}</td>
+        <td>${ch.category??''}</td>
+        <td>${ch.quality??''}</td>
+        <td>${ch.live?'Sim':'Não'}</td>
+        <td>${ch.logoUrl?`<a href="${ch.logoUrl}" target="_blank">logo</a>`:'—'}</td>
+        <td>${ch.streamUrl?`<a href="${ch.streamUrl}" target="_blank">abrir</a>`:'—'}</td>
+        <td class="td-actions"></td>`;
+      const tdAct=tr.querySelector('.td-actions');
+      const bEdit=document.createElement('button'); bEdit.className='btn'; bEdit.textContent='Editar';
+      const bDel=document.createElement('button'); bDel.className='btn danger'; bDel.textContent='Excluir';
+      const bUp=document.createElement('button'); bUp.className='btn'; bUp.textContent='↑';
+      const bDown=document.createElement('button'); bDown.className='btn'; bDown.textContent='↓';
+      bEdit.onclick=()=>{editIndex=idx; fillForm(ch); window.scrollTo({top:0,behavior:'smooth'});};
+      bDel.onclick=()=>{if(confirm(`Excluir "${ch.name}"?`)) deleteAt(idx);};
+      bUp.onclick=()=>{if(idx>0){[channels[idx-1].number,channels[idx].number]=[channels[idx].number,channels[idx-1].number];sortByNumber();renderTable();}};
+      bDown.onclick=()=>{if(idx<channels.length-1){[channels[idx+1].number,channels[idx].number]=[channels[idx].number,channels[idx+1].number];sortByNumber();renderTable();}};
       tdAct.append(bEdit,bDel,bUp,bDown);
-      tr.append(tdNum,tdName,tdCat,tdQl,tdLv,tdLo,tdSt,tdAct);
       tbody.appendChild(tr);
     });
   }
 
-  // ===== Export/Import/Preview =====
-  function download(filename, text){
-    const blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  }
-
+  // ===== Export =====
   function exportJS(){
-    sortByNumber(); ensureIds();
-    const header = '// channels.js — gerado pelo painel Fulltv\n';
-    const body = 'const CHANNELS = ' + JSON.stringify(channels, null, 2) + ';\n';
-    download('channels.js', header + body);
+    sortByNumber();
+    const code='// channels.js — gerado pelo painel Fulltv\n' +
+               'const CHANNELS = ' + JSON.stringify(channels,null,2) + ';\n';
+    const win=window.open('','_blank');
+    win.document.write('<pre style="white-space:pre-wrap;font-size:14px">'+
+                       code.replace(/</g,'&lt;').replace(/>/g,'&gt;')+
+                       '</pre>');
+    win.document.close();
   }
-
   function exportJSON(){
-    sortByNumber(); ensureIds();
-    download('channels.json', JSON.stringify(channels, null, 2));
+    sortByNumber();
+    const code=JSON.stringify(channels,null,2);
+    const win=window.open('','_blank');
+    win.document.write('<pre style="white-space:pre-wrap;font-size:14px">'+
+                       code.replace(/</g,'&lt;').replace(/>/g,'&gt;')+
+                       '</pre>');
+    win.document.close();
   }
 
-  function savePreview(){
-    sortByNumber(); ensureIds();
-    localStorage.setItem('CHANNELS_OVERRIDE', JSON.stringify(channels));
-    alert('Pré-visualização salva! Abra o index.html para testar (sem publicar).');
-  }
-
-  function clearPreview(){
-    localStorage.removeItem('CHANNELS_OVERRIDE');
-    alert('Pré-visualização removida. O site volta a usar o channels.js publicado.');
-  }
+  function savePreview(){sortByNumber();localStorage.setItem('CHANNELS_OVERRIDE',JSON.stringify(channels));alert('Pré-visualização salva! Abra o index.html para testar.');}
+  function clearPreview(){localStorage.removeItem('CHANNELS_OVERRIDE');alert('Pré-visualização removida.');}
 
   function importFile(file){
-    const reader = new FileReader();
-    reader.onload = () => {
-      const txt = reader.result;
-      try {
-        let data;
-        if (/const\s+CHANNELS\s*=/.test(txt)) {
-          const jsonPart = txt.slice(txt.indexOf('['), txt.lastIndexOf(']')+1);
-          data = JSON.parse(jsonPart);
-        } else {
-          data = JSON.parse(txt);
-        }
-        if (!Array.isArray(data)) throw new Error('Arquivo não contém uma lista de canais válida.');
-
-        // normaliza e assegura IDs
-        channels = data.map((c)=>({
-          id: c.id || genId(),
-          number: toInt(c.number),
-          name: c.name || '',
-          category: c.category || 'Abertos',
-          quality: c.quality || 'HD',
-          logoUrl: c.logoUrl || '',
-          live: !!c.live,
-          streamUrl: c.streamUrl || ''
-        }));
-        sortByNumber();
-        renderTable();
-        alert('Importado com sucesso!');
-      } catch(e){
-        alert('Falha ao importar: ' + (e.message || String(e)));
-      }
-    };
-    reader.readAsText(file, 'utf-8');
+    const reader=new FileReader();
+    reader.onload=()=>{try{
+      let data;
+      if(/const\s+CHANNELS\s*=/.test(reader.result)){
+        const jsonPart=reader.result.slice(reader.result.indexOf('['),reader.result.lastIndexOf(']')+1);
+        data=JSON.parse(jsonPart);
+      } else data=JSON.parse(reader.result);
+      if(!Array.isArray(data)) throw new Error('Formato inválido');
+      channels=data.map(c=>({id:genId(),number:toInt(c.number),name:c.name||'',category:c.category||'Abertos',quality:c.quality||'HD',logoUrl:c.logoUrl||'',live:!!c.live,streamUrl:c.streamUrl||''}));
+      sortByNumber(); renderTable(); alert('Importado com sucesso!');
+    }catch(e){alert('Erro ao importar: '+e.message);}};
+    reader.readAsText(file,'utf-8');
   }
 
   // ===== Eventos =====
-  $('btnAdd').onclick = () => {
-    try{
-      const data = readForm();
-      if (editIndex === null) addNew(data);
-      else updateExisting(editIndex, data);
-    }catch(err){ alert(err.message || String(err)); }
-  };
-  $('btnResetForm').onclick = resetForm;
-  $('btnExportJS').onclick = exportJS;
-  $('btnExportJSON').onclick = exportJSON;
-  $('btnSavePreview').onclick = savePreview;
-  $('btnClearPreview').onclick = clearPreview;
-  $('fileImport').addEventListener('change', (e)=>{
-    const f = e.target.files?.[0];
-    if (f) importFile(f);
-    e.target.value = '';
-  });
+  $('btnAdd').onclick=()=>{try{const d=readForm(); editIndex===null?addNew(d):updateExisting(editIndex,d);}catch(e){alert(e.message);}};
+  $('btnResetForm').onclick=resetForm;
+  $('btnExportJS').onclick=exportJS;
+  $('btnExportJSON').onclick=exportJSON;
+  $('btnSavePreview').onclick=savePreview;
+  $('btnClearPreview').onclick=clearPreview;
+  $('fileImport').addEventListener('change',e=>{const f=e.target.files?.[0]; if(f) importFile(f); e.target.value='';});
 
-  // Init
-  sortByNumber(); ensureIds(); renderTable();
+  sortByNumber(); renderTable();
 })();
