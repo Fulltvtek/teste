@@ -49,4 +49,10 @@ const CHANNELS = [
   { id:44, number:44, name: "Nickelodeon", category: "Kids", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Nickelodeon_2009_logo.svg/512px-Nickelodeon_2009_logo.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=nickelodeon" },
   { id:45, number:45, name: "Nick jr", category: "Kids", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Nick_Jr._logo_2009.svg/512px-Nick_Jr._logo_2009.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=nickjr" },
   { id:46, number:46, name: "Gloobinho", category: "Kids", quality: "HD", logoUrl: "https://i.imgur.com/UWkHErt.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=gloobinho" },
+  { id:47, number:47, name: "Multishow",  category: "Variedades", quality: "HD", logoUrl: "https://i.imgur.com/bqVg8nT.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=multishow" },
+{ id:48, number:48, name: "History",    category: "Variedades", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/History_%282021%29.svg/512px-History_%282021%29.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=history" },
+{ id:49, number:49, name: "History 2",  category: "Variedades", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/History2_logo_%282022%29.svg/512px-History2_logo_%282022%29.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=history2" },
+{ id:50, number:50, name: "Space",      category: "Variedades", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/SpaceLogo.svg/512px-SpaceLogo.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=space" },
+{ id:51, number:51, name: "TNT",        category: "Variedades", quality: "HD", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/TNT_Logo_2016.svg/512px-TNT_Logo_2016.svg.png", live: true, streamUrl: "https://reidoscanais.life/embed/?id=tNT" },
+
 ];
