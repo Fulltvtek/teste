@@ -679,5 +679,25 @@ const CHANNELS = [
     "logoUrl": "https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2025/08/logo-a-fazenda-17.png?w=419&h=283&crop=0",
     "live": true,
     "streamUrl": "https://reidoscanais.life/embed/?id=fazenda17-6"
+  },
+  {
+    "id": "af261821-c2f9-4fc3-830b-881b68926fd5",
+    "number": 68,
+    "name": "Disney+",
+    "category": "Esportes",
+    "quality": "HD",
+    "logoUrl": "https://embedtv-3.icu/disneyplus1",
+    "streamUrl": "https://embedtv.digital/assets/images/disneyplus.png",
+    "live": true
+  },
+  {
+    "id": "cb93388f-9911-43e0-8479-f3d45f5500bb",
+    "number": 69,
+    "name": "Disney+ 2",
+    "category": "Esportes",
+    "quality": "HD",
+    "logoUrl": "https://embedtv-3.icu/disneyplus2",
+    "streamUrl": "https://embedtv.digital/assets/images/disneyplus.png",
+    "live": true
   }
 ];
