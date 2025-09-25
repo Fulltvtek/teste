@@ -1,7 +1,6 @@
 (function () {
   // ===== Fonte de canais (preview > publicado) =====
   const RAW_CHANNELS = (() => {
-    // 1) se houver pré-visualização salva no navegador, usa ela
     try {
       const ov = localStorage.getItem('CHANNELS_OVERRIDE');
       if (ov) {
@@ -9,7 +8,6 @@
         if (Array.isArray(arr)) return arr;
       }
     } catch(e){}
-    // 2) senão, usa o channels.js publicado
     return (typeof CHANNELS !== 'undefined' && Array.isArray(CHANNELS)) ? CHANNELS : [];
   })();
 
@@ -125,10 +123,71 @@
     });
   }
 
-  // ===== Player =====
+  // ===== Player & Info =====
   const player = () => document.getElementById('player');
   const infoTitle = () => document.getElementById('infoTitle');
   const infoSubtitle = () => document.getElementById('infoSubtitle');
+
+  // Normaliza URLs para formato de embed (ex.: YouTube)
+  function normalizeEmbedUrl(url) {
+    if (!url) return url;
+    try {
+      const u = new URL(url, location.href);
+      // YouTube
+      if (u.hostname.includes('youtube.com')) {
+        const v = u.searchParams.get('v');
+        if (v) return `https://www.youtube.com/embed/${v}`;
+      }
+      if (u.hostname === 'youtu.be') {
+        return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+      }
+      return u.toString();
+    } catch { return url; }
+  }
+
+  // Define a fonte do player com fallbacks (misto/iframe bloqueado/sem fonte)
+  function setPlayerSource(rawUrl) {
+    const iframe = player();
+    const notice = document.getElementById('playerNotice');
+    const open = document.getElementById('playerOpen');
+    const url = normalizeEmbedUrl(rawUrl);
+
+    const show = (msg, href) => {
+      if (notice) { notice.textContent = msg; notice.style.display = ''; }
+      if (open) {
+        if (href) { open.href = href; open.style.display = ''; } else { open.style.display = 'none'; }
+      }
+    };
+    const hide = () => {
+      if (notice) notice.style.display = 'none';
+      if (open) open.style.display = 'none';
+    };
+
+    hide();
+
+    if (!url) {
+      if (iframe) iframe.src = 'about:blank';
+      show('Fonte indisponível para este evento.', null);
+      return;
+    }
+
+    if (location.protocol === 'https:' && url.startsWith('http:')) {
+      if (iframe) iframe.src = 'about:blank';
+      show('Este vídeo usa HTTP e foi bloqueado pelo navegador (conteúdo misto). Abra em nova aba.', url);
+      return;
+    }
+
+    // tenta carregar
+    if (iframe) iframe.src = url;
+    let ok = false;
+    const onLoad = () => { ok = true; if (iframe) iframe.removeEventListener('load', onLoad); };
+    if (iframe) iframe.addEventListener('load', onLoad, { once: true });
+    setTimeout(() => {
+      if (!ok) {
+        show('O site do vídeo não permite incorporação. Abra em nova aba.', url);
+      }
+    }, 3000);
+  }
 
   function selectChannel(idx) {
     const visible = getVisibleChannels();
@@ -137,8 +196,7 @@
     selectedIndex = Math.max(0, Math.min(idx, visible.length - 1));
     const ch = visible[selectedIndex];
 
-    const iframe = player();
-    if (iframe) iframe.src = ch.streamUrl || 'about:blank';
+    setPlayerSource(ch.streamUrl || '');
 
     const t = infoTitle();
     const s = infoSubtitle();
@@ -263,16 +321,14 @@
           const det = await fetchEventDetail(ev.id);
           url = det?.streamUrl ?? det?.url ?? det?.embed ?? null;
         }
-
-        const iframe = player();
-        if (iframe) iframe.src = url || 'about:blank';
+        setPlayerSource(url || '');
 
         const t = infoTitle();
         const s = infoSubtitle();
         if (t) t.textContent = ev.title || '—';
         if (s) s.textContent = ev.category || '—';
 
-        if (localStorage.getItem(PLAY_GATE_KEY) !== '1') showPlayShield();
+        if (localStorage.getItem('playGateDone') !== '1') showPlayShield();
       });
 
       listEl.appendChild(btn);
