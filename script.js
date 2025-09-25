@@ -172,7 +172,20 @@
     } catch { return url; }
   }
 
-  // Busca recursiva da PRIMEIRA URL válida no objeto (profundidade maior)
+  // -------- PRIORIDADE: SEMPRE O PRIMEIRO embed_url ----------
+  function getPrimaryEmbedUrl(ev) {
+    if (Array.isArray(ev.embeds) && ev.embeds.length) {
+      // encontra o primeiro objeto com embed_url; se vier string, usa direto
+      for (const it of ev.embeds) {
+        if (typeof it === 'string') return it;
+        if (it && typeof it.embed_url === 'string') return it.embed_url;
+        if (it && typeof it.url === 'string') return it.url; // fallback
+      }
+    }
+    return null;
+  }
+
+  // Busca recursiva de outras URLs possíveis (fallbacks genéricos)
   function firstUrlFrom(obj) {
     const urls = [];
     const seen = new Set();
@@ -188,16 +201,15 @@
       seen.add(val);
 
       if (Array.isArray(val)) { for (const v of val) walk(v, depth+1); return; }
-
+      for (const k of ['embeds', ...arrayKeys]) if (k in val) walk(val[k], depth+1);
       for (const k of prefKeys) if (k in val) walk(val[k], depth+1);
-      for (const k of arrayKeys) if (k in val) walk(val[k], depth+1);
-      for (const k in val) if (!prefKeys.includes(k) && !arrayKeys.includes(k)) walk(val[k], depth+1);
+      for (const k in val) if (!prefKeys.includes(k) && !arrayKeys.includes(k) && k!=='embeds') walk(val[k], depth+1);
     };
     walk(obj, 0);
     return urls[0] || '';
   }
 
-  // Normaliza o evento vindo de formatos diferentes
+  // Normaliza o evento (inclui poster e prioridade ao embed_url)
   function normalizeEvent(ev) {
     const title = ev.title ?? ev.name ?? `${ev.team1 || ev.homeTeam?.name || ev.home || '?'} x ${ev.team2 || ev.awayTeam?.name || ev.away || '?'}`;
     const category = ev.category ?? ev.sport ?? ev.league ?? ev.competition ?? 'Esporte';
@@ -208,43 +220,49 @@
       (ev.live ? 'live' : '')
     ).toLowerCase();
 
-    let start = ev.start ?? ev.date ?? ev.time ?? ev.kickoff ?? ev.start_time ?? ev.startAt ?? ev.start_at ?? ev.begin;
+    let start = ev.start ?? ev.start_time ?? ev.date ?? ev.time ?? ev.kickoff ?? ev.startAt ?? ev.start_at ?? ev.begin;
     if (ev?.time?.start) start = ev.time.start;
     let startMs = null;
     if (typeof start === 'number') startMs = start > 2_000_000_000 ? start : start * 1000;
     else if (typeof start === 'string') {
       const n = Number(start);
       if (!Number.isNaN(n) && n > 0) startMs = n > 2_000_000_000 ? n : n * 1000;
-      else { const d = new Date(start); if (!isNaN(d)) startMs = d.getTime(); }
+      else { const d = new Date(start.replace(' ', 'T')); if (!isNaN(d)) startMs = d.getTime(); }
     }
 
     const id = ev.id ?? ev.slug ?? ev._id ??
                `${title}-${startMs || ''}`.replace(/\s+/g,'-').toLowerCase();
 
+    // >>> PRIORIDADE ao primeiro embed_url
+    const primary = getPrimaryEmbedUrl(ev);
+
+    // Fallbacks
     const streamUrl =
-      ev.streamUrl ?? ev.player ?? ev.embed ?? ev.iframe ?? ev.url ?? ev.link ?? ev.watch ??
-      (Array.isArray(ev.players) && (ev.players[0]?.url || ev.players[0])) ??
-      (Array.isArray(ev.links)   && (ev.links[0]?.url || ev.links[0]?.href)) ??
-      (Array.isArray(ev.streams) && (ev.streams[0]?.file || ev.streams[0]?.url || ev.streams[0]?.src)) ??
-      (Array.isArray(ev.sources) && (ev.sources[0]?.file || ev.sources[0]?.src || ev.sources[0]?.url)) ??
+      primary ||
+      ev.streamUrl || ev.player || ev.embed || ev.iframe || ev.url || ev.link || ev.watch ||
+      (Array.isArray(ev.players) && (ev.players[0]?.url || ev.players[0])) ||
+      (Array.isArray(ev.links)   && (ev.links[0]?.url || ev.links[0]?.href)) ||
+      (Array.isArray(ev.streams) && (ev.streams[0]?.file || ev.streams[0]?.url || ev.streams[0]?.src)) ||
+      (Array.isArray(ev.sources) && (ev.sources[0]?.file || ev.sources[0]?.src || ev.sources[0]?.url)) ||
       firstUrlFrom(ev);
 
-    const detailLinkGuess = `${API_BASE}/sports/${encodeURIComponent(id)}`;
+    const poster = ev.poster || ev.image || ev.thumbnail || ev.thumb || null;
+    const detailLink = `${API_BASE}/sports/${encodeURIComponent(id)}`;
 
-    return { id, title, category, start: startMs, status: rawStatus, streamUrl, detailLink: detailLinkGuess };
+    return { id, title, category, start: startMs, status: rawStatus, streamUrl, poster, detailLink };
   }
 
-  // Define a fonte do player com fallbacks (misto/iframe bloqueado/sem fonte)
+  // Define a fonte do player com fallbacks
   function setPlayerSource(rawUrl, fallbackHrefIfNoUrl) {
     const iframe = player();
     const notice = document.getElementById('playerNotice');
     const open = document.getElementById('playerOpen');
     const url = normalizeEmbedUrl(rawUrl);
 
-    const show = (msg, href) => {
+    const show = (msg, href, openLabel='Abrir em nova aba ↗') => {
       if (notice) { notice.textContent = msg; notice.style.display = ''; }
       if (open) {
-        if (href) { open.href = href; open.textContent = 'Abrir detalhes do evento (JSON) ↗'; open.style.display = ''; }
+        if (href) { open.href = href; open.textContent = openLabel; open.style.display = ''; }
         else { open.style.display = 'none'; }
       }
     };
@@ -257,7 +275,8 @@
 
     if (!url) {
       if (iframe) iframe.src = 'about:blank';
-      show('Fonte indisponível para este evento.', fallbackHrefIfNoUrl || null);
+      const href = fallbackHrefIfNoUrl || '#';
+      show('Fonte indisponível para este evento.', href, 'Abrir detalhes do evento (JSON) ↗');
       return;
     }
 
@@ -328,7 +347,7 @@
       const s = (ev.status || '').toLowerCase();
       if (s.includes('end') || ['finished','concluded','ended','finalizado','encerrado'].includes(s)) return false;
       if (ev.start && ev.start < Date.now() && !s.includes('live')) return false;
-      return !!ev.title; // mantemos mesmo que a URL venha via detalhe
+      return !!ev.title;
     });
 
     const seen = new Set(); const uniq = [];
@@ -348,16 +367,21 @@
         const r = await fetch(`${b}${encodeURIComponent(id)}`, { cache: 'no-store' });
         if (!r.ok) continue;
         const d = await r.json();
-        // tenta data direto e também d.data
+
+        // prioridade: primeiro embed_url do detalhe também
+        const primary = getPrimaryEmbedUrl(d) || (d?.data && getPrimaryEmbedUrl(d.data));
+        if (primary) return normalizeEvent({ ...d, streamUrl: primary });
+
         const n = normalizeEvent(d);
         if (n.streamUrl) return n;
+
         if (d?.data) {
           const n2 = normalizeEvent(d.data);
           if (n2.streamUrl) return n2;
         }
-        // última chance: qualquer URL dentro do JSON
+
         const any = firstUrlFrom(d);
-        if (any) return { id, title: d.title || d.name || id, category: d.category || 'Esporte', start: null, status: '', streamUrl: any, detailLink: `${b}${encodeURIComponent(id)}` };
+        if (any) return normalizeEvent({ ...d, streamUrl: any });
       } catch(_) {}
     }
     return null;
@@ -383,155 +407,12 @@
 
       const logoWrap = document.createElement('div');
       logoWrap.className = 'channel-logo';
-      const fallback = document.createElement('div');
-      fallback.textContent = (ev.title || '?').charAt(0).toUpperCase();
-      fallback.className = 'channel-logo-fallback';
-      logoWrap.appendChild(fallback);
-
-      const textWrap = document.createElement('div');
-      textWrap.className = 'channel-texts';
-
-      const titleRow = document.createElement('div');
-      titleRow.className = 'channel-title-row';
-
-      const name = document.createElement('span');
-      name.className = 'channel-name';
-      name.textContent = ev.title || 'Evento';
-
-      const badge = document.createElement('span');
-      badge.className = 'channel-badge';
-      badge.textContent = (String(ev.status).includes('live') ? 'AO VIVO' : 'PRÓXIMO');
-
-      titleRow.append(name, badge);
-
-      const cat = document.createElement('div');
-      cat.className = 'channel-category';
-      const dateLabel = ev.start ? new Date(ev.start).toLocaleString() : '';
-      cat.textContent = [ev.category, dateLabel].filter(Boolean).join(' • ');
-
-      textWrap.append(titleRow, cat);
-      btn.append(logoWrap, textWrap);
-
-      btn.addEventListener('click', async () => {
-        let url = ev.streamUrl;
-        let detailHref = ev.detailLink;
-
-        if (!url) {
-          const det = await fetchEventDetail(ev.id);
-          url = det?.streamUrl || '';
-          if (det?.detailLink) detailHref = det.detailLink;
-          // debug no console para ajudar a mapear
-          console.log('[EVENT SELECTED]', ev);
-          console.log('[EVENT DETAIL]', det);
-        }
-
-        setPlayerSource(url, detailHref);
-
-        const t = infoTitle();
-        const s = infoSubtitle();
-        if (t) t.textContent = ev.title || '—';
-        if (s) s.textContent = ev.category || '—';
-
-        if (localStorage.getItem('playGateDone') !== '1') showPlayShield();
-      });
-
-      listEl.appendChild(btn);
-    });
-  }
-
-  // ===== Abas =====
-  function initTabs() {
-    const btns = Array.from(document.querySelectorAll('header nav.menu button'));
-    if (!btns.length) return;
-
-    const setActiveTabUI = (activeBtn) => btns.forEach(b => b.classList.toggle('active', b === activeBtn));
-
-    btns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault?.();
-        const key = normalize(btn.dataset.tab || btn.textContent);
-        const mapped = TAB_TO_CATEGORY[key] || 'ALL';
-
-        if (mapped === 'LIVE_GAMES') {
-          activeCategory = 'LIVE_GAMES';
-          setActiveTabUI(btn);
-          renderLiveGamesList();
-          if (sportsTimer) clearInterval(sportsTimer);
-          sportsTimer = setInterval(() => {
-            if (activeCategory === 'LIVE_GAMES') renderLiveGamesList();
-          }, 60_000);
-          return;
-        }
-
-        const prev = getVisibleChannels()[selectedIndex];
-        activeCategory = mapped;
-
-        const nowList = getVisibleChannels();
-        const keepIdx = prev ? nowList.findIndex(c => c.id === prev.id) : -1;
-        selectedIndex = keepIdx >= 0 ? keepIdx : 0;
-
-        setActiveTabUI(btn);
-        renderList();
-        selectChannel(selectedIndex);
-      });
-    });
-
-    const initial = btns.find(b => normalize(b.dataset.tab || b.textContent) === 'TODOS OS CANAIS') || btns[0];
-    if (initial) initial.click();
-  }
-
-  // ===== Teclado =====
-  function initKeyboard() {
-    window.addEventListener('keydown', (e) => {
-      if (activeCategory === 'LIVE_GAMES') return;
-      const visible = getVisibleChannels();
-      if (!visible.length) return;
-
-      if (e.key === 'ArrowDown') { e.preventDefault(); selectChannel(selectedIndex + 1); }
-      if (e.key === 'ArrowUp')   { e.preventDefault(); selectChannel(selectedIndex - 1); }
-      if (e.key === 'Enter')     { e.preventDefault(); }
-    });
-  }
-
-  // ===== Relógio =====
-  function initClock() {
-    const el = document.getElementById('clock');
-    if (!el) return;
-    const tick = () => {
-      const now = new Date();
-      el.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-    };
-    tick(); setInterval(tick, 1000);
-  }
-
-  // ===== Fullscreen =====
-  function initFullscreen() {
-    const btn = document.getElementById('btnFullscreen');
-    const container = document.getElementById('playerContainer');
-    const infoBar = document.getElementById('infoBar');
-    if (!btn || !container) return;
-
-    function updateInfoBarVisibility() {
-      const isFS = !!document.fullscreenElement;
-      if (infoBar) infoBar.style.display = isFS ? 'none' : '';
-    }
-    btn.addEventListener('click', async () => {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else { updateInfoBarVisibility(); await container.requestFullscreen?.(); }
-    });
-    document.addEventListener('fullscreenchange', updateInfoBarVisibility);
-  }
-
-  // ===== Init =====
-  function init() {
-    if (!Array.isArray(RAW_CHANNELS)) { console.error('Nenhuma lista de canais disponível.'); return; }
-    initTabs();
-    renderList();
-    if (getVisibleChannels().length) selectChannel(0);
-    initKeyboard();
-    initClock();
-    initFullscreen();
-    initPlayShield();
-  }
-  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
-})();
+      if (ev.poster) {
+        const img = document.createElement('img');
+        img.src = ev.poster;
+        img.alt = ev.title || 'Evento';
+        img.loading = 'lazy';
+        logoWrap.appendChild(img);
+      } else {
+        const fallback = document.createElement('div');
+        fallback.textContent = (ev.title || '?').charAt(0).toU
