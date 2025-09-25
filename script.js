@@ -19,8 +19,9 @@
 
   const TAB_TO_CATEGORY = {
     'TODOS OS CANAIS': 'ALL',
+    'JOGOS AO VIVO': 'LIVE_GAMES',   // <— nova aba especial
     'ABERTOS': 'Abertos',
-    'ESPORTES': 'Esportes',
+    'ESPORTES': 'Esportes',          // mantém o comportamento atual
     'VARIEDADES': 'Variedades',
     'KIDS': 'Kids',
     'DESTAQUES': 'Destaque'
@@ -30,10 +31,11 @@
 
   function getVisibleChannels() {
     if (activeCategory === 'ALL') return RAW_CHANNELS || [];
+    if (activeCategory === 'LIVE_GAMES') return []; // renderizado pela view especial
     return (RAW_CHANNELS || []).filter(ch => normalize(ch.category) === normalize(activeCategory));
   }
 
-  // ===== Play Shield (primeiro clique) — opcionalmente mantenho, ajuda contra popups quando sem sandbox =====
+  // ===== Play Shield (primeiro clique) =====
   const PLAY_GATE_KEY = 'playGateDone';
   function showPlayShield(){ const el=document.getElementById('playShield'); if(el) el.style.display='flex'; }
   function hidePlayShield(){ const el=document.getElementById('playShield'); if(el) el.style.display='none'; }
@@ -48,7 +50,7 @@
     if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); accept(); });
   }
 
-  // ===== Render lista =====
+  // ===== Render lista de Canais =====
   function renderList() {
     const listEl = document.getElementById('channelList');
     if (!listEl) return;
@@ -57,7 +59,7 @@
     const visible = getVisibleChannels();
     if (!visible.length) {
       const empty = document.createElement('div');
-      empty.textContent = 'Nenhum canal nesta categoria.';
+      empty.textContent = activeCategory === 'LIVE_GAMES' ? 'Carregando jogos…' : 'Nenhum canal nesta categoria.';
       empty.style.opacity = '.8';
       listEl.appendChild(empty);
       return;
@@ -148,6 +150,135 @@
     renderList();
   }
 
+  // ====== JOGOS AO VIVO (API externa) ========================================
+  const SPORTS_API = 'https://api.reidoscanais.io/sports';
+  let sportsCache = { items: [], ts: 0 };
+  let sportsTimer = null;
+
+  async function fetchLiveAndUpcoming() {
+    const now = Date.now();
+    if ((now - sportsCache.ts) < 60_000 && sportsCache.items.length) return sportsCache.items;
+
+    const urls = [`${SPORTS_API}?status=live`, `${SPORTS_API}?status=upcoming`];
+    let all = [];
+    for (const u of urls) {
+      try {
+        const r = await fetch(u, { cache: 'no-store' });
+        if (!r.ok) continue;
+        const j = await r.json();
+        const arr = Array.isArray(j) ? j : (Array.isArray(j?.data) ? j.data : []);
+        all = all.concat(arr);
+      } catch(_) {}
+    }
+
+    const mapEvent = (ev) => ({
+      id: ev.id ?? ev.slug ?? ev._id ?? `${ev.homeTeam?.name || ev.home || ''}-${ev.awayTeam?.name || ev.away || ''}-${ev.start || ev.time || ''}`,
+      title: ev.title ?? ev.name ?? `${ev.homeTeam?.name || ev.home || '?'} x ${ev.awayTeam?.name || ev.away || '?'}`,
+      category: ev.category ?? ev.sport ?? ev.league ?? 'Esporte',
+      start: ev.start ?? ev.date ?? ev.time ?? ev.kickoff ?? ev.start_time ?? null,
+      status: String(ev.status ?? '').toLowerCase(),
+      streamUrl: ev.streamUrl ?? ev.url ?? ev.embed ?? ev.link ?? null
+    });
+
+    // filtra fora eventos finalizados/passados (exibimos ao vivo e próximos)
+    const items = all.map(mapEvent).filter(ev => {
+      const s = ev.status;
+      if (s.includes('end') || ['finished','concluded','ended','finalizado','encerrado'].includes(s)) return false;
+      const dt = ev.start ? new Date(ev.start) : null;
+      if (dt && !isNaN(dt) && dt.getTime() < Date.now() && !s.includes('live')) return false;
+      return true;
+    });
+
+    // de-dup
+    const seen = new Set(); const uniq = [];
+    for (const ev of items) {
+      const k = ev.id || ev.title;
+      if (!seen.has(k)) { seen.add(k); uniq.push(ev); }
+    }
+
+    sportsCache = { items: uniq, ts: now };
+    return uniq;
+  }
+
+  async function fetchEventDetail(id) {
+    try {
+      const r = await fetch(`${SPORTS_API}/${encodeURIComponent(id)}`, { cache: 'no-store' });
+      if (!r.ok) return null;
+      return await r.json();
+    } catch(_) { return null; }
+  }
+
+  async function renderLiveGamesList() {
+    const listEl = document.getElementById('channelList');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    const events = await fetchLiveAndUpcoming();
+    if (!events.length) {
+      const empty = document.createElement('div');
+      empty.textContent = 'Nenhum jogo ao vivo ou próximo.';
+      empty.style.opacity = '.8';
+      listEl.appendChild(empty);
+      return;
+    }
+
+    events.forEach((ev) => {
+      const btn = document.createElement('button');
+      btn.className = 'channel-item';
+
+      const logoWrap = document.createElement('div');
+      logoWrap.className = 'channel-logo';
+      const fallback = document.createElement('div');
+      fallback.textContent = (ev.title || '?').charAt(0).toUpperCase();
+      fallback.className = 'channel-logo-fallback';
+      logoWrap.appendChild(fallback);
+
+      const textWrap = document.createElement('div');
+      textWrap.className = 'channel-texts';
+
+      const titleRow = document.createElement('div');
+      titleRow.className = 'channel-title-row';
+
+      const name = document.createElement('span');
+      name.className = 'channel-name';
+      name.textContent = ev.title || 'Evento';
+
+      const badge = document.createElement('span');
+      badge.className = 'channel-badge';
+      badge.textContent = (ev.status?.includes('live') ? 'AO VIVO' : 'PRÓXIMO');
+
+      titleRow.append(name, badge);
+
+      const cat = document.createElement('div');
+      cat.className = 'channel-category';
+      const dateLabel = ev.start ? new Date(ev.start).toLocaleString() : '';
+      cat.textContent = [ev.category, dateLabel].filter(Boolean).join(' • ');
+
+      textWrap.append(titleRow, cat);
+      btn.append(logoWrap, textWrap);
+
+      btn.addEventListener('click', async () => {
+        let url = ev.streamUrl;
+        if (!url) {
+          const det = await fetchEventDetail(ev.id);
+          url = det?.streamUrl ?? det?.url ?? det?.embed ?? null;
+        }
+
+        const iframe = player();
+        if (iframe) iframe.src = url || 'about:blank';
+
+        const t = infoTitle();
+        const s = infoSubtitle();
+        if (t) t.textContent = ev.title || '—';
+        if (s) s.textContent = ev.category || '—';
+
+        if (localStorage.getItem(PLAY_GATE_KEY) !== '1') showPlayShield();
+      });
+
+      listEl.appendChild(btn);
+    });
+  }
+
   // ===== Abas =====
   function initTabs() {
     const btns = Array.from(document.querySelectorAll('header nav.menu button'));
@@ -161,6 +292,18 @@
         const key = normalize(btn.dataset.tab || btn.textContent);
         const mapped = TAB_TO_CATEGORY[key] || 'ALL';
 
+        if (mapped === 'LIVE_GAMES') {
+          activeCategory = 'LIVE_GAMES';
+          setActiveTabUI(btn);
+          renderLiveGamesList();
+          if (sportsTimer) clearInterval(sportsTimer);
+          sportsTimer = setInterval(() => {
+            if (activeCategory === 'LIVE_GAMES') renderLiveGamesList();
+          }, 60_000); // atualiza a cada 60s (jogos que já passaram somem)
+          return;
+        }
+
+        // comportamento padrão (lista de canais)
         const prev = getVisibleChannels()[selectedIndex];
         activeCategory = mapped;
 
@@ -181,6 +324,7 @@
   // ===== Teclado =====
   function initKeyboard() {
     window.addEventListener('keydown', (e) => {
+      if (activeCategory === 'LIVE_GAMES') return; // navegação por setas vale só para canais
       const visible = getVisibleChannels();
       if (!visible.length) return;
 
