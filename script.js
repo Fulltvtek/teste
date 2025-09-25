@@ -11,6 +11,38 @@
     return (typeof CHANNELS !== 'undefined' && Array.isArray(CHANNELS)) ? CHANNELS : [];
   })();
 
+  // ===== Config de API (pode ser sobrescrita via window.* no index.html) =====
+  const DEFAULT_BASE = 'https://api.reidoscanais.io'; // ajuste se seu conector usar outro host
+  const API_BASE = (typeof window !== 'undefined' && window.SPORTS_API_BASE) || DEFAULT_BASE;
+
+  // Gera possíveis endpoints (inclui variações comuns e formato por data)
+  function buildCandidateEndpoints() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const ymd = `${yyyy}-${mm}-${dd}`;
+    const dmy = `${dd}-${mm}-${yyyy}`;
+
+    const defaults = [
+      `${API_BASE}/sports?status=live`,
+      `${API_BASE}/sports?status=upcoming`,
+      `${API_BASE}/sports`,
+      `${API_BASE}/events?status=live`,
+      `${API_BASE}/events?status=upcoming`,
+      `${API_BASE}/events`,
+      // formato "por data" (APIs que exigem date)
+      `${API_BASE}/api/demo?date=${ymd}`,
+      `${API_BASE}/api/demo?date=${dmy}`
+    ];
+
+    // Permite substituir toda a lista via window.SPORTS_API_ENDPOINTS
+    if (typeof window !== 'undefined' && Array.isArray(window.SPORTS_API_ENDPOINTS) && window.SPORTS_API_ENDPOINTS.length) {
+      return window.SPORTS_API_ENDPOINTS;
+    }
+    return defaults;
+  }
+
   // ===== Estado =====
   let selectedIndex = 0;
   let activeCategory = 'ALL'; // Todos os canais
@@ -145,6 +177,86 @@
     } catch { return url; }
   }
 
+  // Tenta achar a PRIMEIRA URL tocável dentro de um objeto de evento
+  function firstUrlFrom(obj) {
+    const urls = [];
+    const seen = new Set();
+    const push = (v) => {
+      if (typeof v === 'string' && /^https?:\/\//i.test(v)) urls.push(v);
+    };
+    const walk = (val, depth=0) => {
+      if (!val || depth > 3) return;
+      if (seen.has(val)) return;
+      if (typeof val === 'string') { push(val); return; }
+      if (Array.isArray(val)) { val.forEach(v => walk(v, depth+1)); return; }
+      if (typeof val === 'object') {
+        seen.add(val);
+        // campos comuns primeiro (prioridade)
+        const preferredKeys = ['streamUrl','player','embed','iframe','watch','url','link','play'];
+        for (const k of preferredKeys) if (k in val) walk(val[k], depth+1);
+        // arrays comuns: players, links, streams, sources
+        if ('players' in val) walk(val.players, depth+1);
+        if ('links'   in val) walk(val.links, depth+1);
+        if ('streams' in val) walk(val.streams, depth+1);
+        if ('sources' in val) walk(val.sources, depth+1);
+        // demais chaves
+        for (const k in val) if (!preferredKeys.includes(k)) walk(val[k], depth+1);
+      }
+    };
+    walk(obj, 0);
+    return urls[0] || '';
+  }
+
+  // Extrai dados padronizados do evento vindo de formatos diferentes
+  function normalizeEvent(ev) {
+    const title = ev.title ?? ev.name ?? `${ev.team1 || ev.homeTeam?.name || ev.home || '?'} x ${ev.team2 || ev.awayTeam?.name || ev.away || '?'}`;
+    const category = ev.category ?? ev.sport ?? ev.league ?? ev.competition ?? 'Esporte';
+
+    // status
+    const rawStatus = String(
+      ev.status ??
+      (ev.is_live ? 'live' : '') ??
+      (ev.live ? 'live' : '')
+    ).toLowerCase();
+
+    // horário (aceita ISO, unix s, unix ms, nested time.start)
+    let start = ev.start ?? ev.date ?? ev.time ?? ev.kickoff ?? ev.start_time ?? ev.startAt ?? ev.start_at ?? ev.begin;
+    if (ev?.time?.start) start = ev.time.start; // unix (documentação de exemplo)
+    let startMs = null;
+    if (typeof start === 'number') {
+      startMs = start > 2_000_000_000 ? start : start * 1000; // heurística s→ms
+    } else if (typeof start === 'string') {
+      const n = Number(start);
+      if (!Number.isNaN(n) && n > 0) startMs = n > 2_000_000_000 ? n : n * 1000;
+      else {
+        const d = new Date(start);
+        if (!isNaN(d)) startMs = d.getTime();
+      }
+    }
+
+    // id
+    const id =
+      ev.id ?? ev.slug ?? ev._id ??
+      `${title}-${startMs || ''}`.replace(/\s+/g,'-').toLowerCase();
+
+    // URL tocável (procura em múltiplos campos/níveis)
+    const streamUrl =
+      ev.streamUrl ?? ev.player ?? ev.embed ?? ev.iframe ?? ev.url ?? ev.link ?? ev.watch ??
+      (Array.isArray(ev.players) && ev.players[0]) ??
+      (Array.isArray(ev.links)   && (ev.links[0]?.url || ev.links[0]?.href)) ??
+      (Array.isArray(ev.streams) && (ev.streams[0]?.url || ev.streams[0]?.src)) ??
+      firstUrlFrom(ev);
+
+    return {
+      id,
+      title,
+      category,
+      start: startMs,
+      status: rawStatus,
+      streamUrl
+    };
+  }
+
   // Define a fonte do player com fallbacks (misto/iframe bloqueado/sem fonte)
   function setPlayerSource(rawUrl) {
     const iframe = player();
@@ -209,7 +321,6 @@
   }
 
   // ====== JOGOS AO VIVO (API externa) ========================================
-  const SPORTS_API = 'https://api.reidoscanais.io/sports';
   let sportsCache = { items: [], ts: 0 };
   let sportsTimer = null;
 
@@ -217,37 +328,36 @@
     const now = Date.now();
     if ((now - sportsCache.ts) < 60_000 && sportsCache.items.length) return sportsCache.items;
 
-    const urls = [`${SPORTS_API}?status=live`, `${SPORTS_API}?status=upcoming`];
-    let all = [];
-    for (const u of urls) {
+    const endpoints = buildCandidateEndpoints();
+    let collected = [];
+
+    for (const u of endpoints) {
       try {
         const r = await fetch(u, { cache: 'no-store' });
         if (!r.ok) continue;
         const j = await r.json();
-        const arr = Array.isArray(j) ? j : (Array.isArray(j?.data) ? j.data : []);
-        all = all.concat(arr);
+
+        // aceita array direto ou {data: []} / {events: []}
+        const arr = Array.isArray(j) ? j
+                  : Array.isArray(j?.data) ? j.data
+                  : Array.isArray(j?.events) ? j.events
+                  : [];
+
+        // normaliza itens
+        const normalized = arr.map(normalizeEvent);
+        collected = collected.concat(normalized);
       } catch(_) {}
     }
 
-    const mapEvent = (ev) => ({
-      id: ev.id ?? ev.slug ?? ev._id ?? `${ev.homeTeam?.name || ev.home || ''}-${ev.awayTeam?.name || ev.away || ''}-${ev.start || ev.time || ''}`,
-      title: ev.title ?? ev.name ?? `${ev.homeTeam?.name || ev.home || '?'} x ${ev.awayTeam?.name || ev.away || '?'}`,
-      category: ev.category ?? ev.sport ?? ev.league ?? 'Esporte',
-      start: ev.start ?? ev.date ?? ev.time ?? ev.kickoff ?? ev.start_time ?? null,
-      status: String(ev.status ?? '').toLowerCase(),
-      streamUrl: ev.streamUrl ?? ev.url ?? ev.embed ?? ev.link ?? null
-    });
-
     // filtra fora eventos finalizados/passados (exibimos ao vivo e próximos)
-    const items = all.map(mapEvent).filter(ev => {
-      const s = ev.status;
+    const items = collected.filter(ev => {
+      const s = (ev.status || '').toLowerCase();
       if (s.includes('end') || ['finished','concluded','ended','finalizado','encerrado'].includes(s)) return false;
-      const dt = ev.start ? new Date(ev.start) : null;
-      if (dt && !isNaN(dt) && dt.getTime() < Date.now() && !s.includes('live')) return false;
-      return true;
+      if (ev.start && ev.start < Date.now() && !s.includes('live')) return false;
+      return !!(ev.title && (ev.streamUrl || true)); // mantém mesmo sem streamUrl para permitir fallback "Abrir em nova aba" via detalhe
     });
 
-    // de-dup
+    // de-dup por id/título
     const seen = new Set(); const uniq = [];
     for (const ev of items) {
       const k = ev.id || ev.title;
@@ -259,11 +369,23 @@
   }
 
   async function fetchEventDetail(id) {
-    try {
-      const r = await fetch(`${SPORTS_API}/${encodeURIComponent(id)}`, { cache: 'no-store' });
-      if (!r.ok) return null;
-      return await r.json();
-    } catch(_) { return null; }
+    // tenta endpoints de detalhe comuns
+    const bases = [ `${API_BASE}/sports/`, `${API_BASE}/events/`, `${API_BASE}/api/events/` ];
+    for (const b of bases) {
+      try {
+        const r = await fetch(`${b}${encodeURIComponent(id)}`, { cache: 'no-store' });
+        if (!r.ok) continue;
+        const d = await r.json();
+        const n = normalizeEvent(d);
+        if (n.streamUrl) return n;
+        // tenta em {data:{}}
+        if (d?.data) {
+          const n2 = normalizeEvent(d.data);
+          if (n2.streamUrl) return n2;
+        }
+      } catch(_) {}
+    }
+    return null;
   }
 
   async function renderLiveGamesList() {
@@ -303,7 +425,7 @@
 
       const badge = document.createElement('span');
       badge.className = 'channel-badge';
-      badge.textContent = (ev.status?.includes('live') ? 'AO VIVO' : 'PRÓXIMO');
+      badge.textContent = (String(ev.status).includes('live') ? 'AO VIVO' : 'PRÓXIMO');
 
       titleRow.append(name, badge);
 
@@ -317,11 +439,12 @@
 
       btn.addEventListener('click', async () => {
         let url = ev.streamUrl;
+        // se não vier stream direto, tenta detalhe
         if (!url) {
           const det = await fetchEventDetail(ev.id);
-          url = det?.streamUrl ?? det?.url ?? det?.embed ?? null;
+          url = det?.streamUrl || firstUrlFrom(det || {}) || '';
         }
-        setPlayerSource(url || '');
+        setPlayerSource(url);
 
         const t = infoTitle();
         const s = infoSubtitle();
