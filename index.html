@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
 
   <!-- CSS do site -->
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <!-- Topbar -->
@@ -24,7 +24,7 @@
 
     <nav class="menu">
       <button data-tab="TODOS OS CANAIS" class="active">Todos os canais</button>
-      <!-- NOVA ABA: ⚽ Jogos ao vivo (não altera "Esportes") -->
+      <!-- NOVA ABA: ⚽ Jogos ao vivo (sem alterar "Esportes") -->
       <button data-tab="JOGOS AO VIVO">⚽ Jogos ao vivo</button>
       <button data-tab="ABERTOS">Abertos</button>
       <button data-tab="ESPORTES">Esportes</button>
@@ -68,6 +68,10 @@
       <div class="live-pill"><span class="dot"></span> AO VIVO</div>
       <button id="btnFullscreen" class="btn-fs" title="Tela cheia">⤢</button>
 
+      <!-- AVISOS/FALLBACKS PARA IFRAME -->
+      <div id="playerNotice" class="player-notice" style="display:none"></div>
+      <a id="playerOpen" class="player-open" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Abrir em nova aba ↗</a>
+
       <div id="infoBar" class="info-bar">
         <div class="meta">
           <div class="meta-label">Canal</div>
@@ -83,7 +87,7 @@
   <footer class="footer">Todos os direitos reservados ao Fulltv © 2025</footer>
 
   <!-- Scripts -->
-  <script src="channels.js?v=6"></script>
-  <script src="script.js?v=6"></script>
+  <script src="channels.js?v=7"></script>
+  <script src="script.js?v=7"></script>
 </body>
 </html>
