@@ -12,9 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
 
   <!-- CSS do site -->
-  <link rel="stylesheet" href="style.css?v=12">
+  <link rel="stylesheet" href="style.css?v=13">
 
-  <!-- Estilos mínimos para as ABAS do esportes (estilo do print) -->
+  <!-- Estilos mínimos para as ABAS de esportes -->
   <style>
     .sports-tabs { display:flex; gap:8px; margin:6px 0 10px 0; }
     .sports-tab {
@@ -23,7 +23,7 @@
     }
     .sports-tab.active { background:#1f6feb; border-color:#1f6feb; color:#fff; }
     .event-card { display:flex; align-items:center; gap:10px; padding:10px; border:1px solid #2a2f3a;
-      border-radius:12px; background:#0f1115; margin-bottom:8px; cursor:pointer; }
+      border-radius:12px; background:#0f1115; margin-bottom:8px; cursor:pointer; text-align:left; }
     .event-thumb { flex:0 0 56px; height:56px; border-radius:10px; overflow:hidden; background:#151821; display:flex; align-items:center; justify-content:center; }
     .event-thumb img { width:100%; height:100%; object-fit:cover; display:block;}
     .event-meta { display:flex; flex-direction:column; min-width:0; }
@@ -39,7 +39,7 @@
   </style>
 </head>
 <body>
-  <!-- (Opcional) Defina aqui caso seu conector use outra base de API -->
+  <!-- (Opcional) Base da API do seu conector -->
   <script>
     // window.SPORTS_API_BASE = 'https://seu-conector.exemplo/api';
   </script>
@@ -73,7 +73,7 @@
     <aside class="sidebar">
       <div class="sidebar-title">Lista de Canais</div>
 
-      <!-- aqui a lista da esquerda é compartilhada com a view de canais e com a de esportes -->
+      <!-- host das abas de esportes -->
       <div id="sportsTabsHost" style="display:none"></div>
       <div id="channelList" class="channel-list thin-scroll"></div>
 
@@ -89,7 +89,7 @@
       <iframe
         id="player"
         src="about:blank"
-        title="Canal atual"
+        title="Player"
         allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
         allowfullscreen
         referrerpolicy="no-referrer"
@@ -117,8 +117,8 @@
 
   <footer class="footer">Todos os direitos reservados ao Fulltv © 2025</footer>
 
-  <!-- Scripts -->
-  <script src="channels.js?v=12"></script>
-  <script src="script.js?v=12" type="module"></script>
+  <!-- Scripts (atenção: script.js NÃO é module) -->
+  <script src="channels.js?v=13"></script>
+  <script src="script.js?v=13"></script>
 </body>
 </html>
