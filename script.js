@@ -86,7 +86,7 @@
   }
   window.FulltvPlayer = { setPlayerSource, showPlayShield, els:{ infoTitle:()=>byId('infoTitle'), infoSubtitle:()=>byId('infoSubtitle') } };
 
-  // Lista
+  // Lista de canais
   function renderList() {
     const listEl = byId('channelList');
     const tabsHost = byId('sportsTabsHost');
@@ -161,7 +161,7 @@
   async function switchToSports(btn) {
     if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
     setActiveTabUI(btn);
-    const mod = await import('./sports.js?v=14');
+    const mod = await import('./sports.js?v=15');
     sportsHandle = mod.mount({
       tabsHost: byId('sportsTabsHost'),
       listEl: byId('channelList'),
