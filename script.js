@@ -1,24 +1,29 @@
-// script.js (module)
 (function () {
-  // ===== Carregamento da lista de canais =====
-  const RAW_CHANNELS = (() => {
+  // ===== Util =====
+  const byId = (id) => document.getElementById(id);
+
+  // tenta capturar CHANNELS de qualquer forma (const/let/var/window/override)
+  function readChannelsSafe() {
+    // 1) variável global (const/let/var) – tenta acesso direto
+    try { if (Array.isArray(CHANNELS)) return CHANNELS; } catch {}
+    // 2) var/globalThis
+    for (const key of ['CHANNELS','channels','CANAIS','canais']) {
+      try { if (Array.isArray(globalThis[key])) return globalThis[key]; } catch {}
+      try { if (Array.isArray(window[key])) return window[key]; } catch {}
+    }
+    // 3) override salvo
     try {
-      for (const key of ['CHANNELS','channels','CANAIS','canais']) {
-        if (Array.isArray(window[key])) return window[key];
-      }
       const ov = localStorage.getItem('CHANNELS_OVERRIDE');
-      if (ov) {
-        const arr = JSON.parse(ov);
-        if (Array.isArray(arr)) return arr;
-      }
-    } catch(e){}
+      if (ov) { const arr = JSON.parse(ov); if (Array.isArray(arr)) return arr; }
+    } catch {}
     return [];
-  })();
+  }
 
   // ===== Estado =====
+  let RAW_CHANNELS = readChannelsSafe();
   let selectedIndex = 0;
   let activeCategory = 'ALL';
-  let sportsHandle = null; // para desmontar o módulo de esportes quando sair
+  let sportsHandle = null; // módulo de esportes ativo
 
   const TAB_TO_CATEGORY = {
     'TODOS OS CANAIS': 'ALL',
@@ -30,13 +35,7 @@
     'DESTAQUES': 'Destaque'
   };
 
-  // ===== Helpers de UI =====
-  const byId = (id) => document.getElementById(id);
-  const player = () => byId('player');
-  const infoTitle = () => byId('infoTitle');
-  const infoSubtitle = () => byId('infoSubtitle');
-
-  // normalização compatível
+  // compatível
   const normalize = (s) =>
     (s || '')
       .normalize('NFD')
@@ -65,28 +64,25 @@
     if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); accept(); });
   }
 
-  // ===== Player helpers (expostos para sports.js) =====
+  // ===== Player helpers (para sports.js chamar) =====
   function normalizeEmbedUrl(url) {
     if (!url) return url;
     try {
       const u = new URL(url, location.href);
-      if (u.hostname.includes('youtube.com')) {
-        const v = u.searchParams.get('v'); if (v) return `https://www.youtube.com/embed/${v}`;
-      }
+      if (u.hostname.includes('youtube.com')) { const v=u.searchParams.get('v'); if (v) return `https://www.youtube.com/embed/${v}`; }
       if (u.hostname === 'youtu.be') return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
       return u.toString();
     } catch { return url; }
   }
-
   function setPlayerSource(rawUrl, fallbackHrefIfNoUrl) {
-    const iframe = player();
+    const iframe = byId('player');
     const notice = byId('playerNotice');
     const open = byId('playerOpen');
     const url = normalizeEmbedUrl(rawUrl);
 
     const show = (msg, href, label='Abrir em nova aba ↗') => {
       if (notice) { notice.textContent = msg; notice.style.display = ''; }
-      if (open) { if (href) { open.href = href; open.textContent = label; open.style.display = ''; } else { open.style.display = 'none'; } }
+      if (open)   { if (href) { open.href = href; open.textContent = label; open.style.display = ''; } else { open.style.display = 'none'; } }
     };
     const hide = () => { if (notice) notice.style.display = 'none'; if (open) open.style.display = 'none'; };
     hide();
@@ -99,9 +95,7 @@
     iframe&&iframe.addEventListener('load',onLoad,{once:true});
     setTimeout(()=>{ if(!ok) show('Este provedor não permite incorporação.', url); },3000);
   }
-
-  // torna disponível para sports.js
-  window.FulltvPlayer = { setPlayerSource, showPlayShield, els:{ infoTitle, infoSubtitle } };
+  window.FulltvPlayer = { setPlayerSource, showPlayShield, els:{ infoTitle:()=>byId('infoTitle'), infoSubtitle:()=>byId('infoSubtitle') } };
 
   // ===== Render lista de Canais =====
   function renderList() {
@@ -110,6 +104,11 @@
     if (!listEl) return;
     listEl.innerHTML = '';
     if (tabsHost) tabsHost.style.display = 'none';
+
+    // re-lê os canais caso channels.js tenha carregado depois
+    if (!RAW_CHANNELS || RAW_CHANNELS.length === 0) {
+      RAW_CHANNELS = readChannelsSafe();
+    }
 
     const visible = getVisibleChannels();
     if (!visible.length) {
@@ -135,11 +134,8 @@
         logoWrap.appendChild(fallback);
       }
 
-      const textWrap = document.createElement('div');
-      textWrap.className = 'channel-texts';
-
-      const titleRow = document.createElement('div');
-      titleRow.className = 'channel-title-row';
+      const textWrap = document.createElement('div'); textWrap.className = 'channel-texts';
+      const titleRow = document.createElement('div'); titleRow.className = 'channel-title-row';
 
       const num = document.createElement('span'); num.className = 'channel-number'; num.textContent = ch.number != null ? ch.number : '—';
       const name = document.createElement('span'); name.className = 'channel-name'; name.textContent = ch.name || 'Sem nome';
@@ -164,37 +160,36 @@
     const ch = visible[selectedIndex];
 
     setPlayerSource(ch.streamUrl || '', null);
-    const t = infoTitle(); const s = infoSubtitle();
+    const t = byId('infoTitle'); const s = byId('infoSubtitle');
     if (t) t.textContent = ch.name || '—'; if (s) s.textContent = ch.category || '—';
-    if (localStorage.getItem(PLAY_GATE_KEY) !== '1') showPlayShield();
+    if (localStorage.getItem('playGateDone') !== '1') showPlayShield();
     renderList();
   }
 
   // ===== Abas =====
+  function setActiveTabUI(activeBtn) {
+    const btns = Array.from(document.querySelectorAll('header nav.menu button'));
+    btns.forEach(b => b.classList.toggle('active', b === activeBtn));
+  }
+
   async function switchToSports(btn) {
-    // limpar view anterior (se houver)
+    // desmonta view anterior
     if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
-    // marcar botão ativo
     setActiveTabUI(btn);
 
-    // lazy-load do módulo de esportes
-    const mod = await import('./sports.js?v=12');
+    // import dinâmico FUNCIONA em script clássico:
+    const mod = await import('./sports.js?v=13');
     sportsHandle = mod.mount({
       tabsHost: byId('sportsTabsHost'),
       listEl: byId('channelList'),
       apiBase: window.SPORTS_API_BASE || 'https://api.reidoscanais.io',
       onPlay: (title, category, url, detailHref) => {
         window.FulltvPlayer.setPlayerSource(url, detailHref);
-        const t = infoTitle(); const s = infoSubtitle();
+        const t = byId('infoTitle'); const s = byId('infoSubtitle');
         if (t) t.textContent = title || '—'; if (s) s.textContent = category || '—';
-        if (localStorage.getItem(PLAY_GATE_KEY) !== '1') showPlayShield();
+        if (localStorage.getItem('playGateDone') !== '1') showPlayShield();
       }
     });
-  }
-
-  function setActiveTabUI(activeBtn) {
-    const btns = Array.from(document.querySelectorAll('header nav.menu button'));
-    btns.forEach(b => b.classList.toggle('active', b === activeBtn));
   }
 
   function initTabs() {
@@ -204,28 +199,33 @@
     btns.forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault?.();
-        const key = normalize(btn.dataset.tab || btn.textContent);
+        const key = (btn.dataset.tab || btn.textContent || '').trim().toUpperCase();
         const mapped = TAB_TO_CATEGORY[key] || 'ALL';
 
         if (mapped === 'LIVE_GAMES') { switchToSports(btn); return; }
 
-        // Desmonta sports quando sair
+        // Saindo de esportes -> desmonta
         if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
-        byId('channelList').innerHTML = ''; // limpa lista anterior
+        byId('channelList').innerHTML = '';
         const tabsHost = byId('sportsTabsHost'); if (tabsHost) tabsHost.style.display='none';
 
         activeCategory = mapped;
         setActiveTabUI(btn);
+
+        // re-lê canais caso channels.js tenha acabado de carregar
+        RAW_CHANNELS = readChannelsSafe();
+
         const prev = getVisibleChannels()[selectedIndex];
         const nowList = getVisibleChannels();
         const keepIdx = prev ? nowList.findIndex(c => c.id === prev.id) : -1;
         selectedIndex = keepIdx >= 0 ? keepIdx : 0;
+
         renderList();
         if (getVisibleChannels().length) selectChannel(selectedIndex);
       });
     });
 
-    const initial = btns.find(b => normalize(b.dataset.tab || b.textContent) === 'TODOS OS CANAIS') || btns[0];
+    const initial = btns.find(b => (b.dataset.tab || b.textContent || '').trim().toUpperCase() === 'TODOS OS CANAIS') || btns[0];
     if (initial) initial.click();
   }
 
@@ -239,7 +239,7 @@
     });
   }
 
-  // ===== Relógio/FS/Shield =====
+  // ===== Relógio / FS / Shield =====
   function initClock() {
     const el = byId('clock'); if (!el) return;
     const tick = () => { el.textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}); };
