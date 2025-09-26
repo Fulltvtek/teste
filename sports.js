@@ -1,13 +1,11 @@
-// sports.js (ESM)
+// sports.js (ESM) — módulo carregado apenas na aba "⚽ Jogos ao vivo"
 export function mount({ tabsHost, listEl, apiBase, onPlay }) {
   if (!listEl) throw new Error('listEl não encontrado');
 
-  // ===== Estado local =====
-  let currentTab = 'LIVE'; // 'LIVE' | 'UPCOMING' | 'ALL'
+  let currentTab = 'LIVE';
   let timer = null;
   let cache = { items: [], ts: 0 };
 
-  // ===== UI das ABAS =====
   if (tabsHost) {
     tabsHost.style.display = '';
     tabsHost.innerHTML = '';
@@ -23,7 +21,6 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
     tabsHost.appendChild(tabs);
   }
 
-  // ===== Helpers =====
   const endpoints = [
     `${apiBase}/sports?status=live`,
     `${apiBase}/sports?status=upcoming`,
@@ -105,7 +102,7 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
         all = all.concat(arr.map(normalize));
       } catch {}
     }
-    // filtra: fora finalizados / passados (exceto em aba TODOS)
+    // filtra (fora finalizados e passados em LIVE/UPCOMING)
     const filtered = all.filter(ev => {
       const s = ev.status;
       const isEnded = s.includes('end') || ['finished','concluded','ended','finalizado','encerrado'].includes(s);
@@ -120,10 +117,7 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
     return uniq;
   }
 
-  function formatDate(ts) {
-    if (!ts) return '';
-    try { return new Date(ts).toLocaleString(); } catch { return ''; }
-  }
+  function formatDate(ts) { try { return ts ? new Date(ts).toLocaleString() : ''; } catch { return ''; } }
 
   function statusBadge(ev) {
     const live = ev.status.includes('live');
@@ -138,7 +132,6 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
     listEl.innerHTML = '';
     const data = await fetchAll();
 
-    // filtro por aba
     const filtered = data.filter(ev => {
       if (currentTab === 'LIVE') return ev.status.includes('live');
       if (currentTab === 'UPCOMING') return !ev.status.includes('live');
@@ -153,13 +146,11 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
     for (const ev of filtered) {
       const item = document.createElement('button'); item.className = 'event-card';
 
-      // thumb/poster
       const thumb = document.createElement('div'); thumb.className = 'event-thumb';
       if (ev.poster) { const img = document.createElement('img'); img.src = ev.poster; img.alt = ev.title; img.loading='lazy'; thumb.appendChild(img); }
       else { thumb.textContent = ev.title.charAt(0).toUpperCase(); }
       item.appendChild(thumb);
 
-      // textos
       const meta = document.createElement('div'); meta.className = 'event-meta';
       const t = document.createElement('div'); t.className = 'event-title'; t.textContent = ev.title;
       const sub = document.createElement('div'); sub.className = 'event-sub'; sub.textContent = [ev.category, formatDate(ev.start)].filter(Boolean).join(' • ');
@@ -168,18 +159,14 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
       meta.appendChild(row); meta.appendChild(sub);
       item.appendChild(meta);
 
-      // click -> play
       item.addEventListener('click', () => onPlay(ev.title, ev.category, ev.url || '', `${apiBase}/sports/${encodeURIComponent(ev.id)}`));
-
       listEl.appendChild(item);
     }
   }
 
-  // init + auto refresh
   render();
   timer = setInterval(() => { render(); }, 60_000);
 
-  // API do mount (para o script.js poder limpar)
   return {
     destroy() { if (timer) clearInterval(timer); timer = null; if (tabsHost) tabsHost.style.display='none'; if (listEl) listEl.innerHTML=''; }
   };
