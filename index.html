@@ -12,16 +12,36 @@
   <link href="https://fonts.googleapis.com/css2?family=Libertinus+Keyboard&display=swap" rel="stylesheet">
 
   <!-- CSS do site -->
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=12">
+
+  <!-- Estilos mínimos para as ABAS do esportes (estilo do print) -->
+  <style>
+    .sports-tabs { display:flex; gap:8px; margin:6px 0 10px 0; }
+    .sports-tab {
+      appearance:none; border:1px solid #2a2f3a; background:#121418; color:#e6edf3;
+      padding:8px 12px; border-radius:10px; font-weight:600; cursor:pointer;
+    }
+    .sports-tab.active { background:#1f6feb; border-color:#1f6feb; color:#fff; }
+    .event-card { display:flex; align-items:center; gap:10px; padding:10px; border:1px solid #2a2f3a;
+      border-radius:12px; background:#0f1115; margin-bottom:8px; cursor:pointer; }
+    .event-thumb { flex:0 0 56px; height:56px; border-radius:10px; overflow:hidden; background:#151821; display:flex; align-items:center; justify-content:center; }
+    .event-thumb img { width:100%; height:100%; object-fit:cover; display:block;}
+    .event-meta { display:flex; flex-direction:column; min-width:0; }
+    .event-title { font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .event-sub { font-size:12px; opacity:.8; }
+    .badge-dot { display:inline-flex; align-items:center; gap:6px; font-size:11px; padding:4px 8px; border-radius:999px; margin-left:8px; }
+    .badge-live { background:#b4232a; color:white; }
+    .badge-up { background:#2b3a55; color:#dbeafe; }
+    /* Avisos do player */
+    .player-notice{margin-top:12px;padding:12px 14px;border-radius:10px;background:#101216;color:#e2e8f0;border:1px solid #2a2f3a;font-size:14px;line-height:1.35;}
+    .player-open{display:inline-block;margin-top:8px;padding:10px 14px;border-radius:10px;background:#1f6feb;color:#fff;text-decoration:none;font-weight:600;}
+    @media (max-width:520px){ .event-title{font-size:14px} .event-sub{font-size:11px} }
+  </style>
 </head>
 <body>
-  <!-- (Opcional) Se o seu CONECTOR usa outra base de API, configure aqui: -->
+  <!-- (Opcional) Defina aqui caso seu conector use outra base de API -->
   <script>
-    // window.SPORTS_API_BASE = 'https://SEU-CONECTOR.exemplo'; // ex.: https://meuservidor/api
-    // window.SPORTS_API_ENDPOINTS = [
-    //   `${window.SPORTS_API_BASE}/sports?status=live`,
-    //   `${window.SPORTS_API_BASE}/sports?status=upcoming`
-    // ];
+    // window.SPORTS_API_BASE = 'https://seu-conector.exemplo/api';
   </script>
 
   <!-- Topbar -->
@@ -33,7 +53,6 @@
 
     <nav class="menu">
       <button data-tab="TODOS OS CANAIS" class="active">Todos os canais</button>
-      <!-- NOVA ABA: ⚽ Jogos ao vivo (sem alterar "Esportes") -->
       <button data-tab="JOGOS AO VIVO">⚽ Jogos ao vivo</button>
       <button data-tab="ABERTOS">Abertos</button>
       <button data-tab="ESPORTES">Esportes</button>
@@ -53,7 +72,11 @@
   <main class="layout">
     <aside class="sidebar">
       <div class="sidebar-title">Lista de Canais</div>
+
+      <!-- aqui a lista da esquerda é compartilhada com a view de canais e com a de esportes -->
+      <div id="sportsTabsHost" style="display:none"></div>
       <div id="channelList" class="channel-list thin-scroll"></div>
+
       <div class="hint">↑/↓ para navegar • Enter para assistir</div>
     </aside>
 
@@ -63,7 +86,6 @@
         <button id="playBtn" class="play-btn" type="button" aria-label="Reproduzir">▶ Reproduzir</button>
       </div>
 
-      <!-- sem sandbox -->
       <iframe
         id="player"
         src="about:blank"
@@ -77,7 +99,7 @@
       <div class="live-pill"><span class="dot"></span> AO VIVO</div>
       <button id="btnFullscreen" class="btn-fs" title="Tela cheia">⤢</button>
 
-      <!-- AVISOS/FALLBACKS PARA IFRAME -->
+      <!-- avisos/fallback -->
       <div id="playerNotice" class="player-notice" style="display:none"></div>
       <a id="playerOpen" class="player-open" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Abrir em nova aba ↗</a>
 
@@ -96,7 +118,7 @@
   <footer class="footer">Todos os direitos reservados ao Fulltv © 2025</footer>
 
   <!-- Scripts -->
-  <script src="channels.js?v=10"></script>
-  <script src="script.js?v=10"></script>
+  <script src="channels.js?v=12"></script>
+  <script src="script.js?v=12" type="module"></script>
 </body>
 </html>
