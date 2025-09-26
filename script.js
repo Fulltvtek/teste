@@ -1,17 +1,12 @@
 (function () {
-  // ===== Util =====
   const byId = (id) => document.getElementById(id);
 
-  // tenta capturar CHANNELS de qualquer forma (const/let/var/window/override)
   function readChannelsSafe() {
-    // 1) variável global (const/let/var) – tenta acesso direto
     try { if (Array.isArray(CHANNELS)) return CHANNELS; } catch {}
-    // 2) var/globalThis
     for (const key of ['CHANNELS','channels','CANAIS','canais']) {
       try { if (Array.isArray(globalThis[key])) return globalThis[key]; } catch {}
       try { if (Array.isArray(window[key])) return window[key]; } catch {}
     }
-    // 3) override salvo
     try {
       const ov = localStorage.getItem('CHANNELS_OVERRIDE');
       if (ov) { const arr = JSON.parse(ov); if (Array.isArray(arr)) return arr; }
@@ -19,11 +14,10 @@
     return [];
   }
 
-  // ===== Estado =====
   let RAW_CHANNELS = readChannelsSafe();
   let selectedIndex = 0;
   let activeCategory = 'ALL';
-  let sportsHandle = null; // módulo de esportes ativo
+  let sportsHandle = null;
 
   const TAB_TO_CATEGORY = {
     'TODOS OS CANAIS': 'ALL',
@@ -35,13 +29,8 @@
     'DESTAQUES': 'Destaque'
   };
 
-  // compatível
   const normalize = (s) =>
-    (s || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toUpperCase()
-      .trim();
+    (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
 
   function getVisibleChannels() {
     if (activeCategory === 'ALL') return RAW_CHANNELS;
@@ -49,7 +38,7 @@
     return RAW_CHANNELS.filter(ch => normalize(ch.category) === normalize(activeCategory));
   }
 
-  // ===== Play Shield =====
+  // Play Shield
   const PLAY_GATE_KEY = 'playGateDone';
   function showPlayShield(){ const el=byId('playShield'); if(el) el.style.display='flex'; }
   function hidePlayShield(){ const el=byId('playShield'); if(el) el.style.display='none'; }
@@ -64,7 +53,7 @@
     if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); accept(); });
   }
 
-  // ===== Player helpers (para sports.js chamar) =====
+  // Player helpers (para sports.js)
   function normalizeEmbedUrl(url) {
     if (!url) return url;
     try {
@@ -97,7 +86,7 @@
   }
   window.FulltvPlayer = { setPlayerSource, showPlayShield, els:{ infoTitle:()=>byId('infoTitle'), infoSubtitle:()=>byId('infoSubtitle') } };
 
-  // ===== Render lista de Canais =====
+  // Lista
   function renderList() {
     const listEl = byId('channelList');
     const tabsHost = byId('sportsTabsHost');
@@ -105,10 +94,7 @@
     listEl.innerHTML = '';
     if (tabsHost) tabsHost.style.display = 'none';
 
-    // re-lê os canais caso channels.js tenha carregado depois
-    if (!RAW_CHANNELS || RAW_CHANNELS.length === 0) {
-      RAW_CHANNELS = readChannelsSafe();
-    }
+    if (!RAW_CHANNELS || RAW_CHANNELS.length === 0) RAW_CHANNELS = readChannelsSafe();
 
     const visible = getVisibleChannels();
     if (!visible.length) {
@@ -166,19 +152,16 @@
     renderList();
   }
 
-  // ===== Abas =====
+  // Abas
   function setActiveTabUI(activeBtn) {
     const btns = Array.from(document.querySelectorAll('header nav.menu button'));
     btns.forEach(b => b.classList.toggle('active', b === activeBtn));
   }
 
   async function switchToSports(btn) {
-    // desmonta view anterior
     if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
     setActiveTabUI(btn);
-
-    // import dinâmico FUNCIONA em script clássico:
-    const mod = await import('./sports.js?v=13');
+    const mod = await import('./sports.js?v=14');
     sportsHandle = mod.mount({
       tabsHost: byId('sportsTabsHost'),
       listEl: byId('channelList'),
@@ -204,7 +187,6 @@
 
         if (mapped === 'LIVE_GAMES') { switchToSports(btn); return; }
 
-        // Saindo de esportes -> desmonta
         if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
         byId('channelList').innerHTML = '';
         const tabsHost = byId('sportsTabsHost'); if (tabsHost) tabsHost.style.display='none';
@@ -212,9 +194,7 @@
         activeCategory = mapped;
         setActiveTabUI(btn);
 
-        // re-lê canais caso channels.js tenha acabado de carregar
         RAW_CHANNELS = readChannelsSafe();
-
         const prev = getVisibleChannels()[selectedIndex];
         const nowList = getVisibleChannels();
         const keepIdx = prev ? nowList.findIndex(c => c.id === prev.id) : -1;
@@ -229,17 +209,17 @@
     if (initial) initial.click();
   }
 
-  // ===== Teclado =====
+  // Teclado
   function initKeyboard() {
     window.addEventListener('keydown', (e) => {
-      if (sportsHandle) return; // setas só nos canais
+      if (sportsHandle) return;
       const visible = getVisibleChannels(); if (!visible.length) return;
       if (e.key === 'ArrowDown') { e.preventDefault(); selectChannel(selectedIndex + 1); }
       if (e.key === 'ArrowUp')   { e.preventDefault(); selectChannel(selectedIndex - 1); }
     });
   }
 
-  // ===== Relógio / FS / Shield =====
+  // Relógio / FS / Shield
   function initClock() {
     const el = byId('clock'); if (!el) return;
     const tick = () => { el.textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}); };
@@ -253,7 +233,6 @@
     document.addEventListener('fullscreenchange', updateInfoBarVisibility);
   }
 
-  // ===== Init =====
   function init() {
     initTabs();
     renderList();
@@ -265,3 +244,4 @@
   }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();
+
