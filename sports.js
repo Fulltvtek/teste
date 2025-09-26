@@ -6,6 +6,7 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
   let timer = null;
   let cache = { items: [], ts: 0 };
 
+  // Abinhas internas
   if (tabsHost) {
     tabsHost.style.display = '';
     tabsHost.innerHTML = '';
@@ -102,7 +103,6 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
         all = all.concat(arr.map(normalize));
       } catch {}
     }
-    // filtra (fora finalizados e passados em LIVE/UPCOMING)
     const filtered = all.filter(ev => {
       const s = ev.status;
       const isEnded = s.includes('end') || ['finished','concluded','ended','finalizado','encerrado'].includes(s);
@@ -110,7 +110,6 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
       if (currentTab !== 'ALL' && ev.start && ev.start < Date.now() && !s.includes('live')) return false;
       return true;
     });
-    // de-dup
     const seen = new Set(); const uniq = [];
     for (const ev of filtered) { const k = ev.id || ev.title; if (!seen.has(k)) { seen.add(k); uniq.push(ev); } }
     cache = { items: uniq, ts: now };
@@ -118,7 +117,6 @@ export function mount({ tabsHost, listEl, apiBase, onPlay }) {
   }
 
   function formatDate(ts) { try { return ts ? new Date(ts).toLocaleString() : ''; } catch { return ''; } }
-
   function statusBadge(ev) {
     const live = ev.status.includes('live');
     const el = document.createElement('span');
