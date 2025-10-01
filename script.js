@@ -18,6 +18,7 @@
   let selectedIndex = 0;
   let activeCategory = 'ALL';
   let sportsHandle = null;
+  let exploreHandle = null; // <<< novo
 
   const TAB_TO_CATEGORY = {
     'TODOS OS CANAIS': 'ALL',
@@ -26,7 +27,8 @@
     'ESPORTES': 'Esportes',
     'VARIEDADES': 'Variedades',
     'KIDS': 'Kids',
-    'DESTAQUES': 'Destaque'
+    // 'DESTAQUES': 'Destaque',  // substituído por EXPLORAR
+    'EXPLORAR': 'EXPLORE'      // <<< nova aba especial
   };
 
   const normalize = (s) =>
@@ -160,6 +162,7 @@
 
   async function switchToSports(btn) {
     if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
+    if (exploreHandle && exploreHandle.destroy) { exploreHandle.destroy(); exploreHandle = null; }
     setActiveTabUI(btn);
     const mod = await import('./sports.js?v=15');
     sportsHandle = mod.mount({
@@ -175,6 +178,45 @@
     });
   }
 
+  // --------- EXPLORAR (grade de cartões) ---------
+  async function switchToExplore(btn) {
+    if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
+    if (exploreHandle && exploreHandle.destroy) { exploreHandle.destroy(); exploreHandle = null; }
+    setActiveTabUI(btn);
+
+    const tabsHost = byId('sportsTabsHost'); if (tabsHost) tabsHost.style.display='none';
+    const mod = await import('./explore.js?v=15');
+    exploreHandle = mod.mount({
+      listEl: byId('channelList'),
+      // imagem provisória igual para todas as abas, conforme solicitado:
+      placeholderImage: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fbr.freepik.com%2Ffotos-vetores-gratis%2Freality-show&psig=AOvVaw3srysGDnUFrMVsOYQgnqJO&ust=1759428193827000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCMDNyoXLg5ADFQAAAAAdAAAAABAE',
+      onOpenReality: () => {
+        activeCategory = 'Destaque'; // “Reality Show” usa os canais da antiga aba Destaque
+        byId('channelList').innerHTML = '';
+        renderList();
+        if (getVisibleChannels().length) selectChannel(0);
+      },
+      onOpenSports: () => {
+        activeCategory = 'Esportes';
+        byId('channelList').innerHTML = '';
+        renderList();
+        if (getVisibleChannels().length) selectChannel(0);
+      },
+      onOpenAdult: () => {
+        activeCategory = 'Adulto';
+        byId('channelList').innerHTML = '';
+        renderList();
+        if (getVisibleChannels().length) selectChannel(0);
+      },
+      onOpenMV: () => {
+        activeCategory = 'MV'; // preparado para futura categoria “MV”
+        byId('channelList').innerHTML = '';
+        renderList();
+        if (getVisibleChannels().length) selectChannel(0);
+      }
+    });
+  }
+
   function initTabs() {
     const btns = Array.from(document.querySelectorAll('header nav.menu button'));
     if (!btns.length) return;
@@ -186,8 +228,10 @@
         const mapped = TAB_TO_CATEGORY[key] || 'ALL';
 
         if (mapped === 'LIVE_GAMES') { switchToSports(btn); return; }
+        if (mapped === 'EXPLORE')    { switchToExplore(btn); return; }
 
         if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
+        if (exploreHandle && exploreHandle.destroy) { exploreHandle.destroy(); exploreHandle = null; }
         byId('channelList').innerHTML = '';
         const tabsHost = byId('sportsTabsHost'); if (tabsHost) tabsHost.style.display='none';
 
@@ -244,4 +288,3 @@
   }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();
-
