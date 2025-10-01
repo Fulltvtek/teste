@@ -7,10 +7,7 @@
       try { if (Array.isArray(globalThis[key])) return globalThis[key]; } catch {}
       try { if (Array.isArray(window[key])) return window[key]; } catch {}
     }
-    try {
-      const ov = localStorage.getItem('CHANNELS_OVERRIDE');
-      if (ov) { const arr = JSON.parse(ov); if (Array.isArray(arr)) return arr; }
-    } catch {}
+    try { const ov = localStorage.getItem('CHANNELS_OVERRIDE'); if (ov) { const arr = JSON.parse(ov); if (Array.isArray(arr)) return arr; } } catch {}
     return [];
   }
 
@@ -18,7 +15,7 @@
   let selectedIndex = 0;
   let activeCategory = 'ALL';
   let sportsHandle = null;
-  let exploreHandle = null; // <<< novo
+  let exploreHandle = null;
 
   const TAB_TO_CATEGORY = {
     'TODOS OS CANAIS': 'ALL',
@@ -27,8 +24,7 @@
     'ESPORTES': 'Esportes',
     'VARIEDADES': 'Variedades',
     'KIDS': 'Kids',
-    // 'DESTAQUES': 'Destaque',  // substituído por EXPLORAR
-    'EXPLORAR': 'EXPLORE'      // <<< nova aba especial
+    'EXPLORAR': 'EXPLORE'   // modo especial
   };
 
   const normalize = (s) =>
@@ -40,7 +36,7 @@
     return RAW_CHANNELS.filter(ch => normalize(ch.category) === normalize(activeCategory));
   }
 
-  // Play Shield
+  // Gate de reprodução
   const PLAY_GATE_KEY = 'playGateDone';
   function showPlayShield(){ const el=byId('playShield'); if(el) el.style.display='flex'; }
   function hidePlayShield(){ const el=byId('playShield'); if(el) el.style.display='none'; }
@@ -55,7 +51,7 @@
     if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); accept(); });
   }
 
-  // Player helpers (para sports.js)
+  // Player helpers
   function normalizeEmbedUrl(url) {
     if (!url) return url;
     try {
@@ -154,15 +150,25 @@
     renderList();
   }
 
-  // Abas
+  // UI helpers (abas)
   function setActiveTabUI(activeBtn) {
     const btns = Array.from(document.querySelectorAll('header nav.menu button'));
     btns.forEach(b => b.classList.toggle('active', b === activeBtn));
   }
 
+  function enterExploreMode() {
+    const main = document.querySelector('main.layout');
+    if (main) main.classList.add('explore-mode');
+  }
+  function exitExploreMode() {
+    const main = document.querySelector('main.layout');
+    if (main) main.classList.remove('explore-mode');
+  }
+
   async function switchToSports(btn) {
     if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
     if (exploreHandle && exploreHandle.destroy) { exploreHandle.destroy(); exploreHandle = null; }
+    exitExploreMode();
     setActiveTabUI(btn);
     const mod = await import('./sports.js?v=15');
     sportsHandle = mod.mount({
@@ -178,42 +184,33 @@
     });
   }
 
-  // --------- EXPLORAR (grade de cartões) ---------
+  // --------- EXPLORAR (grade ocupa o lugar do player) ---------
   async function switchToExplore(btn) {
     if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
     if (exploreHandle && exploreHandle.destroy) { exploreHandle.destroy(); exploreHandle = null; }
     setActiveTabUI(btn);
+    enterExploreMode();
 
-    const tabsHost = byId('sportsTabsHost'); if (tabsHost) tabsHost.style.display='none';
-    const mod = await import('./explore.js?v=15');
+    const mod = await import('./explore.js?v=16');
     exploreHandle = mod.mount({
-      listEl: byId('channelList'),
-      // imagem provisória igual para todas as abas, conforme solicitado:
+      host: byId('exploreContainer'),
+      // usar a mesma imagem em todas as abas, conforme solicitado:
       placeholderImage: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fbr.freepik.com%2Ffotos-vetores-gratis%2Freality-show&psig=AOvVaw3srysGDnUFrMVsOYQgnqJO&ust=1759428193827000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCMDNyoXLg5ADFQAAAAAdAAAAABAE',
       onOpenReality: () => {
-        activeCategory = 'Destaque'; // “Reality Show” usa os canais da antiga aba Destaque
+        // Abrir os MESMOS canais da categoria "Destaque"
+        activeCategory = 'Destaque';
+        exitExploreMode(); // volta para a UI normal
+        const btnAll = [...document.querySelectorAll('header nav.menu button')]
+          .find(b => (b.dataset.tab||b.textContent||'').trim().toUpperCase() === 'TODOS OS CANAIS');
         byId('channelList').innerHTML = '';
         renderList();
         if (getVisibleChannels().length) selectChannel(0);
+        setActiveTabUI(btnAll || btn); // não troca aba no topo, apenas restabelece destaque
+        enterExploreMode(); // mantém o explore visível até o usuário escolher um canal
       },
-      onOpenSports: () => {
-        activeCategory = 'Esportes';
-        byId('channelList').innerHTML = '';
-        renderList();
-        if (getVisibleChannels().length) selectChannel(0);
-      },
-      onOpenAdult: () => {
-        activeCategory = 'Adulto';
-        byId('channelList').innerHTML = '';
-        renderList();
-        if (getVisibleChannels().length) selectChannel(0);
-      },
-      onOpenMV: () => {
-        activeCategory = 'MV'; // preparado para futura categoria “MV”
-        byId('channelList').innerHTML = '';
-        renderList();
-        if (getVisibleChannels().length) selectChannel(0);
-      }
+      onOpenMV: () => { /* preparado: categoria MV futura */ },
+      onOpenSports: () => { /* pode abrir 'Esportes' se preferir; por ora, só visual */ },
+      onOpenAdult: () => { /* idem */ }
     });
   }
 
@@ -230,8 +227,11 @@
         if (mapped === 'LIVE_GAMES') { switchToSports(btn); return; }
         if (mapped === 'EXPLORE')    { switchToExplore(btn); return; }
 
-        if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
+        // Sair do modo explore ao trocar de aba
         if (exploreHandle && exploreHandle.destroy) { exploreHandle.destroy(); exploreHandle = null; }
+        exitExploreMode();
+
+        if (sportsHandle && sportsHandle.destroy) { sportsHandle.destroy(); sportsHandle = null; }
         byId('channelList').innerHTML = '';
         const tabsHost = byId('sportsTabsHost'); if (tabsHost) tabsHost.style.display='none';
 
@@ -257,6 +257,7 @@
   function initKeyboard() {
     window.addEventListener('keydown', (e) => {
       if (sportsHandle) return;
+      if (document.querySelector('main.layout').classList.contains('explore-mode')) return;
       const visible = getVisibleChannels(); if (!visible.length) return;
       if (e.key === 'ArrowDown') { e.preventDefault(); selectChannel(selectedIndex + 1); }
       if (e.key === 'ArrowUp')   { e.preventDefault(); selectChannel(selectedIndex - 1); }
