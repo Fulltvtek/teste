@@ -70,6 +70,13 @@
     /* Avisos/fallback do player */
     .player-notice{margin-top:12px;padding:12px 14px;border-radius:10px;background:#101216;color:#e2e8f0;border:1px solid #2a2f3a;font-size:14px;line-height:1.35;}
     .player-open{display:inline-block;margin-top:8px;padding:10px 14px;border-radius:10px;background:#1f6feb;color:#fff;text-decoration:none;font-weight:600;}
+
+    /* ---------- EXPLORAR (grade de cartões) ---------- */
+    .explore-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-top:8px; }
+    .explore-card{ position:relative; border:1px solid #2a2f3a; border-radius:16px; overflow:hidden; background:#0f1115; cursor:pointer; }
+    .explore-card img{ width:100%; height:120px; object-fit:cover; display:block; }
+    .explore-card .label{ position:absolute; left:10px; bottom:10px; padding:6px 10px; border-radius:10px; font-weight:800; background:rgba(0,0,0,.55); color:#fff; }
+
     @media (max-width:520px){ .event-title{font-size:14px} .event-sub{font-size:11px} .meta-title{font-size:20px} }
   </style>
 </head>
@@ -95,7 +102,8 @@
       <button data-tab="KIDS" class="kids-font" title="Kids">
         <span class="kids-k">K</span><span class="kids-i">I</span><span class="kids-d">D</span><span class="kids-s">S</span>
       </button>
-      <button data-tab="DESTAQUES">Destaques</button>
+      <!-- Renomeado: Destaques -> Explorar -->
+      <button data-tab="EXPLORAR">Explorar</button>
     </nav>
 
     <div class="right">
@@ -157,3 +165,4 @@
   <script src="script.js?v=15"></script>
 </body>
 </html>
+
